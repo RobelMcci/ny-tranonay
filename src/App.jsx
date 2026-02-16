@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useRef, lazy, Suspense } from 'react'
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
 import Particles from '@tsparticles/react'
 import { loadSlim } from '@tsparticles/slim'
+import maison from './assets/image15.jpg'
 
 // Lazy loading pour les composants moins critiques
 const GalleryLightbox = lazy(() => import('./components/GalleryLightbox'))
@@ -26,7 +27,7 @@ const activities = [
 ]
 
 const gallery = [
-  { src: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=70&fm=webp', alt: 'Piscine et jardin', category: 'Piscine' },
+  { src: {maison}, alt: 'Vue de la maison', category: 'Piscine' },
   { src: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=70&fm=webp', alt: 'Salle événement', category: 'Événement' },
   { src: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=70&fm=webp', alt: 'Espace barbecue', category: 'Grillades' },
   { src: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1200&q=70&fm=webp', alt: 'Team building', category: 'Événement' },
@@ -46,10 +47,8 @@ const testimonials = [
 ]
 
 const stats = [
-  { label: 'Activités & espaces', value: '16+' },
-  { label: 'Événements réalisés', value: '250+' },
+  { label: 'Activités & espaces', value: '15+' },
   { label: 'Clients satisfaits', value: '98%' },
-  { label: 'M² d\'espace vert', value: '2000' },
 ]
 
 const pricing = [
@@ -414,7 +413,7 @@ function App() {
           <motion.div
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2000&q=70&fm=webp')`,
+              backgroundImage: `url('${maison}')`,
               opacity: heroOpacity,
               scale: heroScale,
             }}
@@ -489,9 +488,9 @@ function App() {
                 variants={revealVariant}
                 className="mt-8 flex flex-wrap gap-3"
               >
-                <span className="pill">✅ Événements sur-mesure</span>
-                <span className="pill">✅ Team building & EVG/EVJF</span>
-                <span className="pill">✅ Ambiance nature & calme</span>
+                <span className="pill">Événements sur-mesure</span>
+                <span className="pill">Team building & EVG/EVJF</span>
+                <span className="pill">Ambiance nature & calme</span>
               </motion.div>
 
               {/* Stats */}
@@ -599,7 +598,7 @@ function App() {
               >
                 <div className="sticky top-24 overflow-hidden rounded-3xl">
                   <img
-                    src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=70&fm=webp"
+                    src={maison}
                     alt="Espace loisirs Ambohimasina"
                     className="h-full w-full object-cover"
                     loading="lazy"
