@@ -3,6 +3,20 @@ import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
 import Particles from '@tsparticles/react'
 import { loadSlim } from '@tsparticles/slim'
 import maison from './assets/image15.jpg'
+import evenement3 from './assets/image1.jpg'
+import babyfoot from './assets/image2.jpg'
+import evenement1 from './assets/image3.jpg'
+import evenement2 from './assets/image4.jpg'
+import grillades from './assets/image5.jpg'
+import nourriture1 from './assets/image6.jpg'
+import nourriture2 from './assets/image7.jpg'
+import nourriture3 from './assets/image8.jpg'
+import nourriture4 from './assets/image9.jpg'
+import vuejardin from './assets/image10.jpg'
+import jardin2 from './assets/image11.jpg'
+import jeuxvideos from './assets/image12.jpg'
+import karaoke from './assets/image13.jpg'
+import escalier from './assets/image14.jpg'
 
 // Lazy loading pour les composants moins critiques
 const GalleryLightbox = lazy(() => import('./components/GalleryLightbox'))
@@ -27,15 +41,21 @@ const activities = [
 ]
 
 const gallery = [
-  { src: {maison}, alt: 'Vue de la maison', category: 'Piscine' },
-  { src: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=70&fm=webp', alt: 'Salle événement', category: 'Événement' },
-  { src: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=70&fm=webp', alt: 'Espace barbecue', category: 'Grillades' },
-  { src: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1200&q=70&fm=webp', alt: 'Team building', category: 'Événement' },
-  { src: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=70&fm=webp', alt: 'Coworking', category: 'Coworking' },
-  { src: 'https://images.unsplash.com/photo-1515169067865-5387ec356754?auto=format&fit=crop&w=1200&q=70&fm=webp', alt: 'Karaoké night', category: 'Soirée' },
-  { src: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=70&fm=webp', alt: 'Jardin zen', category: 'Jardin' },
-  { src: 'https://images.unsplash.com/photo-1558021212-51b6ecfa0db9?auto=format&fit=crop&w=1200&q=70&fm=webp', alt: 'Baby-foot', category: 'Jeux' },
-  { src: 'https://images.unsplash.com/photo-1519677100207-a0e668c92439?auto=format&fit=crop&w=1200&q=70&fm=webp', alt: 'Anniversaire', category: 'Événement' },
+  { src: maison, alt: 'Vue de la maison', category: 'Piscine' },
+  { src: vuejardin, alt: 'Vue du jardin', category: 'Jardin' },
+  { src: grillades, alt: 'Espace barbecue', category: 'Grillades' },
+  { src: babyfoot, alt: 'Baby-foot', category: 'Jeux' },
+  { src: karaoke, alt: 'Karaoké', category: 'Soirée' },
+  { src: escalier, alt: 'Escalier', category: 'Espace' },
+  { src: jeuxvideos, alt: 'Aire jeux vidéo', category: 'Jeux' },
+  { src: nourriture1, alt: 'Nourriture 1', category: 'Nourriture' },
+  { src: nourriture2, alt: 'Nourriture 2', category: 'Nourriture' },
+  { src: nourriture3, alt: 'Nourriture 3', category: 'Nourriture' },
+  { src: nourriture4, alt: 'Nourriture 4', category: 'Nourriture' },
+  { src: evenement1, alt: 'Événement privé', category: 'Événement' },
+  { src: evenement2, alt: 'Salle événement', category: 'Événement' },
+  { src: evenement3, alt: 'Ambiance soirée', category: 'Soirée' },
+  { src: jardin2, alt: 'Jardin zen', category: 'Jardin' },
 ]
 
 const testimonials = [
