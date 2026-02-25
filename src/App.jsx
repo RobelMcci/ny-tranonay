@@ -17,6 +17,7 @@ import jardin2 from './assets/image11.jpg'
 import jeuxvideos from './assets/image12.jpg'
 import karaoke from './assets/image13.jpg'
 import escalier from './assets/image14.jpg'
+import logo from './assets/image14.jpg'
 
 // Lazy loading pour les composants moins critiques
 const GalleryLightbox = lazy(() => import('./components/GalleryLightbox'))
@@ -73,26 +74,33 @@ const stats = [
 
 const pricing = [
   {
-    name: 'Journée Zen',
-    price: '120 000 Ar',
+    name: 'Journée (10h-19h)',
+    price: '200 000 Ar',
     period: '/journée',
-    includes: ['Accès piscine & jardin', 'Espace coworking calme', 'Thé & café inclus', 'Transats & parasols'],
-    limited: ['Jusqu\'à 20 personnes'],
+    includes: ['Accès piscine & jardin', 'Karaoké', 'Espace jeux', 'Toutes activités incluses', 'Sono & micro', 'Connection Wifi'],
+    limited: ['Jusqu\'à 30 personnes'],
   },
   {
-    name: 'Afterwork Premium',
-    price: '260 000 Ar',
-    period: '/soirée',
+    name: 'Journée pour couples',
+    price: '100 000 Ar',
+    period: 'journée',
     includes: ['Grande Salle privée', 'Baby-foot & karaoké', 'Connexion Wifi inclus', 'Sono & micro'],
-    limited: ['Jusqu\'à 40 personnes'],
+    limited: ['par couple (2 personnes)'],
     featured: true,
   },
   {
-    name: 'Événement complet',
-    price: 'Sur devis',
+    name: 'Chambre d\'hôtes',
+    price: '60 000 Ar',
     period: 'sur-mesure',
-    includes: ['Traiteur partenaire', 'Projecteur & écran', 'Décoration personnalisée', 'Photo booth'],
-    limited: ['Jusqu\'à 120 personnes'],
+    includes: ['Chambre double avec salle de bain privé', 'Accès piscine & jardin', 'Parking sécurisé'],
+    limited: ['1 chambre pour 2 personnes'],
+  },
+  {
+    name: 'Chambre commun',
+    price: '50 000 Ar',
+    period: 'sur-mesure',
+    includes: ['Chambre avec salle de bain commune', 'Accès piscine & jardin', 'Parking sécurisé'],
+    limited: ['1 chambre pour 2 personnes'],
   },
 ]
 
@@ -275,8 +283,10 @@ function App() {
             transition={{ duration: 0.5 }}
           >
             <div className="text-center">
-              <motion.div
-                className="loading-logo mx-auto"
+              <motion.img
+                src={logo}
+                alt="Ny Tranonay"
+                className="loading-logo mx-auto rounded-full shadow-2xl"
                 animate={{ 
                   scale: [1, 1.2, 1],
                   rotate: [0, 180, 360],
@@ -286,16 +296,14 @@ function App() {
                   duration: 2,
                   ease: 'easeInOut',
                 }}
-              >
-                NT
-              </motion.div>
+              />
               <motion.p 
                 className="mt-4 text-white/80 text-sm"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                Ny Tranonay
+                Tranonay
               </motion.p>
             </div>
           </motion.div>
@@ -310,12 +318,14 @@ function App() {
             className="flex items-center gap-2 text-lg font-bold text-[#1F2937]"
             onClick={(e) => handleAnchorClick(e, '#hero')}
           >
-            <motion.div 
-              className="h-10 w-10 rounded-full bg-gradient-to-br from-[#DC2626] to-[#10B981]"
+            <motion.img
+              src={logo}
+              alt="Ny Tranonay Logo"
+              className="h-10 w-10 rounded-full object-cover shadow-md"
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ type: 'spring', stiffness: 300 }}
             />
-            <span className="hidden sm:inline">Ny Tranonay</span>
+            <span className="hidden sm:inline">Tranonay</span>
           </a>
 
           {/* Desktop Navigation */}
@@ -575,7 +585,7 @@ function App() {
                   variants={revealVariant}
                   className="section-subtitle"
                 >
-                  Ny Tranonay est un espace de loisir multifonctionnel à Ambohimasina, conçu pour les
+                  Tranonay est un espace de loisir multifonctionnel à Ambohimasina, conçu pour les
                   familles, entreprises et groupes d&apos;amis. Ici, chaque zone est pensée pour la
                   convivialité et la détente.
                 </motion.p>
@@ -924,40 +934,6 @@ function App() {
                 </motion.div>
               ))}
             </div>
-
-            {/* Tableau comparatif */}
-            <div className="mt-12 overflow-x-auto">
-              <table className="pricing-table w-full min-w-[600px]">
-                <thead>
-                  <tr>
-                    <th className="rounded-tl-2xl">Formule</th>
-                    <th>Journée Zen</th>
-                    <th>Afterwork Premium</th>
-                    <th className="rounded-tr-2xl">Événement complet</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="font-semibold">Prix</td>
-                    <td>120 000 Ar</td>
-                    <td className="bg-[#10B981]/10">260 000 Ar</td>
-                    <td>Sur devis</td>
-                  </tr>
-                  <tr>
-                    <td className="font-semibold">Durée</td>
-                    <td>journée</td>
-                    <td>Soirée</td>
-                    <td>Journée complète</td>
-                  </tr>
-                  <tr>
-                    <td className="font-semibold">Capacité max</td>
-                    <td>20 pers.</td>
-                    <td>40 pers.</td>
-                    <td>120 pers.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
           </div>
         </section>
 
@@ -984,7 +960,7 @@ function App() {
                 >
                   <a
                     className="btn-primary flex-1"
-                    href="https://wa.me/261340000000"
+                    href="https://wa.me/261342141031"
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -993,7 +969,7 @@ function App() {
                   </a>
                   <a
                     className="btn-outline flex-1"
-                    href="tel:+261340000000"
+                    href="tel:+261342141031"
                   >
                     <span className="mr-2">📞</span>
                     Appeler
@@ -1184,82 +1160,206 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="footer">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-8 md:grid-cols-4">
-            <div>
-              <h3 className="text-lg font-semibold text-white">Ny Tranonay</h3>
-              <p className="mt-3 text-sm text-white/70">
-                Espace loisir Ambohimasina, location de salle et activités immersives à Madagascar.
+      <footer className="footer relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 20px 20px, white 2px, transparent 2px)',
+            backgroundSize: '40px 40px'
+          }} />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl">
+          {/* CTA Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12 rounded-3xl bg-gradient-to-r from-[#DC2626] to-[#10B981] p-8 text-center"
+          >
+            <h3 className="text-2xl font-bold text-white md:text-3xl">
+              Prêt à vivre une expérience inoubliable ?
+            </h3>
+            <p className="mt-3 text-white/90">
+              Réservez dès maintenant votre événement ou votre journée détente
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-4">
+              <a
+                href="#contact"
+                onClick={(e) => handleAnchorClick(e, '#contact')}
+                className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-3 font-semibold text-[#DC2626] transition hover:scale-105 hover:shadow-xl"
+              >
+                📅 Réserver maintenant
+              </a>
+              <a
+                href="https://wa.me/+261342141031"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-white px-8 py-3 font-semibold text-white transition hover:bg-white hover:text-[#DC2626]"
+              >
+                💬 WhatsApp
+              </a>
+            </div>
+          </motion.div>
+
+          {/* Main Footer Content */}
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            {/* Brand Column */}
+            <div className="lg:col-span-1">
+              <div className="flex items-center gap-3">
+                <img
+                  src={logo}
+                  alt="Ny Tranonay Logo"
+                  className="h-12 w-12 rounded-full object-cover shadow-lg"
+                />
+                <h3 className="text-xl font-bold text-white">Ny Tranonay</h3>
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-white/70">
+                L'espace loisir incontournable à Ambohimasina. Location de salle, activités immersives et moments inoubliables à Madagascar.
               </p>
-              <div className="mt-4 flex gap-4">
-                <a href="https://facebook.com" className="text-white/70 hover:text-white transition">
-                  <span className="sr-only">Facebook</span>
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
-                  </svg>
-                </a>
-                <a href="https://instagram.com" className="text-white/70 hover:text-white transition">
-                  <span className="sr-only">Instagram</span>
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14c-2.33 0-4.31-1.46-5.11-3.5h10.22c-.8 2.04-2.78 3.5-5.11 3.5z" />
-                  </svg>
-                </a>
-                <a href="https://tiktok.com" className="text-white/70 hover:text-white transition">
-                  <span className="sr-only">TikTok</span>
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.5a4.83 4.83 0 01-1.04-.1z" />
-                  </svg>
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-semibold uppercase tracking-widest text-white/50">Plan</h4>
-              <div className="mt-4 flex flex-col gap-2 text-sm">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    className="footer-link text-white/70 hover:text-white"
-                    onClick={(e) => handleAnchorClick(e, link.href)}
+              
+              {/* Social Links */}
+              <div className="mt-6">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/50">Suivez-nous</p>
+                <div className="flex gap-3">
+                  <motion.a
+                    href="https://facebook.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    whileHover={{ scale: 1.1, y: -2 }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white hover:text-[#DC2626]"
                   >
-                    {link.label}
-                  </a>
+                    <span className="sr-only">Facebook</span>
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
+                    </svg>
+                  </motion.a>
+                  <motion.a
+                    href="https://instagram.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    whileHover={{ scale: 1.1, y: -2 }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white hover:text-[#DC2626]"
+                  >
+                    <span className="sr-only">Instagram</span>
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                    </svg>
+                  </motion.a>
+                  <motion.a
+                    href="https://tiktok.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    whileHover={{ scale: 1.1, y: -2 }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white hover:text-[#DC2626]"
+                  >
+                    <span className="sr-only">TikTok</span>
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.5a4.83 4.83 0 01-1.04-.1z" />
+                    </svg>
+                  </motion.a>
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation Column */}
+            <div>
+              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/50">Navigation</h4>
+              <ul className="space-y-3 text-sm">
+                {navLinks.map((link) => (
+                  <li key={link.href}>
+                    <a
+                      href={link.href}
+                      className="group inline-flex items-center text-white/70 transition hover:text-white"
+                      onClick={(e) => handleAnchorClick(e, link.href)}
+                    >
+                      <span className="mr-2 transition group-hover:translate-x-1">→</span>
+                      {link.label}
+                    </a>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
 
+            {/* Contact Column */}
             <div>
-              <h4 className="text-sm font-semibold uppercase tracking-widest text-white/50">Informations</h4>
-              <div className="mt-4 flex flex-col gap-2 text-sm text-white/70">
-                <p>📍 Ambohimasina, Votovorona</p>
-                <p>CUR, Madagascar</p>
-                <p>📞 +261 34 00 000 00</p>
-                <p>✉️ contact@nytranonay.mg</p>
-              </div>
+              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/50">Contact</h4>
+              <ul className="space-y-3 text-sm text-white/70">
+                <li className="flex items-start gap-2">
+                  <span className="text-base">📍</span>
+                  <div>
+                    <div className="font-medium text-white">Adresse</div>
+                    <div>Ambohimasina, Votovorona</div>
+                    <div>CUR, Madagascar</div>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-base">📞</span>
+                  <div>
+                    <div className="font-medium text-white">Téléphone</div>
+                    <a href="tel:+261342141031" className="hover:text-white transition">
+                      +261 34 21 410 31
+                    </a>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-base">✉️</span>
+                  <div>
+                    <div className="font-medium text-white">Email</div>
+                    <a href="mailto:contact@nytranonay.mg" className="hover:text-white transition">
+                      contact@nytranonay.mg
+                    </a>
+                  </div>
+                </li>
+              </ul>
             </div>
 
+            {/* Hours Column */}
             <div>
-              <h4 className="text-sm font-semibold uppercase tracking-widest text-white/50">Horaires</h4>
-              <div className="mt-4 flex flex-col gap-2 text-sm text-white/70">
-                <p>Lun - Ven : 08h - 22h</p>
-                <p>Sam : 09h - 23h</p>
-                <p>Dim : 09h - 20h</p>
-                <p className="mt-2 text-xs text-white/50">Fermé les jours fériés</p>
+              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/50">Horaires</h4>
+              <ul className="space-y-2 text-sm text-white/70">
+                <li className="flex justify-between">
+                  <span>Lundi - Vendredi</span>
+                  <span className="font-medium text-white">8h - 22h</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Samedi</span>
+                  <span className="font-medium text-white">9h - 23h</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Dimanche</span>
+                  <span className="font-medium text-white">9h - 20h</span>
+                </li>
+              </ul>
+              <div className="mt-4 rounded-lg bg-white/10 p-3 backdrop-blur-sm">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="flex h-2 w-2 animate-pulse rounded-full bg-[#10B981]"></span>
+                  <span className="text-white/90">Actuellement ouvert</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-12 border-t border-white/10 pt-8 text-center text-xs text-white/50">
-            <p>© 2026 Ny Tranonay - Espace Loisir Ambohimasina. Tous droits réservés.</p>
-            <p className="mt-2">
-              <a href="#" className="hover:text-white transition">Mentions légales</a>
-              {' • '}
-              <a href="#" className="hover:text-white transition">Politique de confidentialité</a>
-              {' • '}
-              <a href="#" className="hover:text-white transition">CGV</a>
-            </p>
+          {/* Bottom Bar */}
+          <div className="mt-12 border-t border-white/10 pt-8">
+            <div className="flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
+              <p className="text-xs text-white/50">
+                © 2026 Ny Tranonay - Espace Loisir Ambohimasina. Tous droits réservés.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4 text-xs">
+                <a href="#" className="text-white/50 transition hover:text-white">
+                  Mentions légales
+                </a>
+                <span className="text-white/30">•</span>
+                <a href="#" className="text-white/50 transition hover:text-white">
+                  Politique de confidentialité
+                </a>
+                <span className="text-white/30">•</span>
+                <a href="#" className="text-white/50 transition hover:text-white">
+                  CGV
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </footer>
@@ -1278,7 +1378,7 @@ function App() {
 
       {/* WhatsApp Float Button */}
       <a
-        href="https://wa.me/261340000000"
+        href="https://wa.me/+261340232350"
         target="_blank"
         rel="noreferrer"
         className="whatsapp-float"
