@@ -5,16 +5,18 @@ export default {
     extend: {
       colors: {
         brand: {
-          red: "#DC2626",
-          green: "#10B981",
-          dark: "#1F2937",
+          terracotta: "#C2410C",
+          forest: "#047857",
+          gold: "#D97706",
+          cream: "#FDF6EC",
+          charcoal: "#2B211B",
         },
       },
       boxShadow: {
-        soft: "0 10px 20px rgba(0,0,0,0.15)",
+        soft: "0 10px 20px rgba(43, 33, 27, 0.12)",
       },
       backgroundImage: {
-        "brand-gradient": "linear-gradient(135deg, #DC2626, #10B981)",
+        "brand-gradient": "linear-gradient(135deg, #C2410C, #047857)",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

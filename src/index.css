@@ -5,8 +5,8 @@
 @layer base {
   :root {
     font-family: "Inter", system-ui, sans-serif;
-    color: #1F2937; /* Noir subtil de la charte */
-    background-color: #FFFFFF;
+    color: #2B211B;
+    background-color: #FFFCF8;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -18,7 +18,7 @@
   body {
     margin: 0;
     min-width: 320px;
-    background-color: #FFFFFF;
+    background-color: #FFFCF8;
     overflow-x: hidden;
   }
 
@@ -60,11 +60,11 @@
   }
 
   .hero-gradient {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(16, 185, 129, 0.9));
+    background: linear-gradient(135deg, rgba(194, 65, 12, 0.9), rgba(4, 120, 87, 0.9));
   }
 
   .heading-gradient {
-    background: linear-gradient(135deg, #DC2626, #10B981);
+    background: linear-gradient(135deg, #C2410C, #047857);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -75,22 +75,11 @@
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
-  /* Cards activités avec hover +10% */
-  .activity-card {
-    @apply relative overflow-hidden rounded-2xl bg-white shadow-soft transition-all duration-500;
-    transform: scale(1);
-  }
-
-  .activity-card:hover {
-    transform: scale(1.1);
-    @apply shadow-xl z-10;
-  }
-
   /* Pattern de fond nature */
   .section-pattern {
     background-image: 
-      radial-gradient(circle at 10px 10px, rgba(220, 38, 38, 0.08) 2px, transparent 2px),
-      radial-gradient(circle at 30px 30px, rgba(16, 185, 129, 0.08) 2px, transparent 2px);
+      radial-gradient(circle at 10px 10px, rgba(194, 65, 12, 0.08) 2px, transparent 2px),
+      radial-gradient(circle at 30px 30px, rgba(4, 120, 87, 0.08) 2px, transparent 2px);
     background-size: 40px 40px, 80px 80px;
   }
 
@@ -107,18 +96,18 @@
 
   /* Boutons avec micro-interactions */
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-[#DC2626] px-6 py-3 md:px-8 md:py-4 
+    @apply inline-flex items-center justify-center rounded-full bg-[#C2410C] px-6 py-3 md:px-8 md:py-4 
            font-semibold text-white transition-all duration-300 ease-out
-           hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#10B981] 
+           hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#047857] 
            active:scale-95 disabled:opacity-50;
-    box-shadow: 0 20px 30px -10px rgba(220, 38, 38, 0.3);
+    box-shadow: 0 20px 30px -10px rgba(194, 65, 12, 0.3);
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center rounded-full border-2 border-[#DC2626] 
-           px-6 py-3 md:px-8 md:py-4 font-semibold text-[#DC2626] 
+    @apply inline-flex items-center justify-center rounded-full border-2 border-[#C2410C] 
+           px-6 py-3 md:px-8 md:py-4 font-semibold text-[#C2410C] 
            transition-all duration-300 ease-out hover:scale-105 
-           hover:bg-[#DC2626] hover:text-white hover:shadow-xl active:scale-95;
+           hover:bg-[#C2410C] hover:text-white hover:shadow-xl active:scale-95;
   }
 
   /* Cards avec ombre standard */
@@ -137,19 +126,19 @@
   /* Formulaires optimisés mobile */
   .input-field {
     @apply w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm 
-           transition-all duration-200 focus:border-[#DC2626] focus:outline-none 
-           focus:ring-2 focus:ring-[#DC2626]/20 hover:border-[#DC2626]/50;
+           transition-all duration-200 focus:border-[#C2410C] focus:outline-none 
+           focus:ring-2 focus:ring-[#C2410C]/20 hover:border-[#C2410C]/50;
   }
 
   /* Pills pour tags */
   .pill {
     @apply inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm 
-           font-medium text-[#1F2937] shadow-soft backdrop-blur-sm;
+           font-medium text-[#2B211B] shadow-soft backdrop-blur-sm;
   }
 
   /* Titres sections */
   .section-title {
-    @apply text-3xl font-bold text-[#1F2937] sm:text-4xl lg:text-5xl;
+    @apply text-3xl font-bold text-[#2B211B] sm:text-4xl lg:text-5xl;
   }
 
   .section-subtitle {
@@ -159,28 +148,26 @@
   /* Navigation */
   .nav-link {
     @apply text-sm font-semibold text-slate-700 transition-all duration-200 
-           hover:text-[#DC2626] relative after:absolute after:bottom-0 after:left-0 
-           after:h-0.5 after:w-0 after:bg-[#DC2626] after:transition-all hover:after:w-full;
+           hover:text-[#C2410C] relative after:absolute after:bottom-0 after:left-0 
+           after:h-0.5 after:w-0 after:bg-[#C2410C] after:transition-all hover:after:w-full;
   }
 
   /* Menu hamburger mobile */
   .hamburger {
-    @apply relative h-10 w-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10B981];
+    @apply relative h-10 w-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#047857];
   }
 
   /* Loading screen animé */
   .loading-screen {
     @apply fixed inset-0 grid place-items-center z-50;
-    background: linear-gradient(135deg, #DC2626, #10B981);
-    animation: fadeOut 0.5s ease-in-out 2s forwards;
+    background: linear-gradient(135deg, #C2410C, #047857);
   }
 
   .loading-logo {
     width: min(120px, 25vw);
     height: min(120px, 25vw);
-    @apply rounded-full bg-white/25 grid place-items-center text-white font-bold 
-           tracking-widest shadow-soft animate-pulse;
-    animation: logoPulse 1.5s ease-in-out infinite;
+    @apply rounded-full bg-white/25 grid place-items-center text-white font-bold
+           tracking-widest shadow-soft;
   }
 
   /* Grille responsive activités */
@@ -204,7 +191,7 @@
   }
 
   .pricing-table th {
-    @apply bg-[#DC2626] text-white p-4 text-left;
+    @apply bg-[#C2410C] text-white p-4 text-left;
   }
 
   .pricing-table td {
@@ -216,7 +203,7 @@
   }
 
   .pricing-table tr:hover td {
-    @apply bg-[#10B981]/5;
+    @apply bg-[#047857]/5;
   }
 
   /* Témoignages carousel */
@@ -225,13 +212,13 @@
   }
 
   .testimonial-quote {
-    @apply text-lg italic text-[#1F2937] relative pl-6;
+    @apply text-lg italic text-[#2B211B] relative pl-6;
     quotes: "«" "»" "‘" "’";
   }
 
   .testimonial-quote::before {
     content: "«";
-    @apply absolute -left-2 top-0 text-4xl text-[#DC2626]/20;
+    @apply absolute -left-2 top-0 text-4xl text-[#C2410C]/20;
   }
 
   /* Formulaire contact */
@@ -245,7 +232,7 @@
 
   /* Footer */
   .footer {
-    @apply bg-[#1F2937] px-4 py-12 text-white md:py-16;
+    @apply bg-[#2B211B] px-4 py-12 text-white md:py-16;
   }
 
   .footer-link {
@@ -258,8 +245,8 @@
 
   /* Badge SEO local */
   .local-badge {
-    @apply inline-flex items-center gap-1 rounded-full bg-[#10B981]/10 
-           px-3 py-1 text-xs font-medium text-[#10B981];
+    @apply inline-flex items-center gap-1 rounded-full bg-[#047857]/10 
+           px-3 py-1 text-xs font-medium text-[#047857];
   }
 
 }
@@ -352,11 +339,11 @@
 
   /* Gradients */
   .bg-gradient-brand {
-    background: linear-gradient(135deg, #DC2626, #10B981);
+    background: linear-gradient(135deg, #C2410C, #047857);
   }
 
   .text-gradient-brand {
-    background: linear-gradient(135deg, #DC2626, #10B981);
+    background: linear-gradient(135deg, #C2410C, #047857);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

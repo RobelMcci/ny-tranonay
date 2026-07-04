@@ -1,16 +1,34 @@
-# React + Vite
+## Lien du site hebergement : https://ny-tranonay.netlify.app/
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
+# Mise à jour des informations
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tafir Privatisation : 
+200000Ar journée de 8h30 à 18h
+200000Ar Nuité de 18h à 9h
+inclus : piscine, grande salle, karaoké & dancing, babyfoot, jeux Vidéo sur PC, simulateur de jeux de course au volan, water gun, jeux de société.
 
-## React Compiler
+# Divers : 
+Cinéma, barbecue, cuisine équipé + frigo, sonorisation (JBL), écran TV 80"
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+# Prix pour les chambres : 
+- Chambre double (lit 2 places), toilette exterieur, climatisée, eau chaude, wifi, terrasse privée : '45000Ar/Nuit'
+- Chambre Twin (lit 2 places + lit monoplace), Chambre double (lit 2 places), toilette exterieur, climatisée, eau chaude, wifi, terrasse privée, TV : '55000Ar/Nuit'
+- Chambre double (lit 2 places), toilette exterieur, climatisée, eau chaude, wifi, terrasse privée, TV: '50000Ar/Nuit'
+- Chambre double (lit 2 places), toilette Privé, climatisée, eau chaude, wifi, terrasse privée, TV: '60000Ar/Nuit'
 
-## Expanding the ESLint configuration
+N.B : Horair chambre : 
+    check in : 10h
+    check out : 10h jour + jour 1
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# Restauration
+    La restauration est sur commande
+    Plat du jour : 10000Ar
+    Plat complet (entré + résistance + déssert) : 20000Ar
+    Nourriture : autorisation d'apporter de l'exterieur mais les boissons sont sur place
+
+# Réception évènementielle : 
+    Pack inclus : Salle Dinatoire, cuisine équipée, couvert complet, nape de table, housse chaise, déco fleurs, sonorisation
+    horaire : 8h30 à 18h
+    tarif : 150000Ar/Jours
+    capacité : 50 personnes
