@@ -1,170 +1,272 @@
-import { useEffect, useMemo, useState, useRef, lazy, Suspense } from 'react'
-import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
-import Particles from '@tsparticles/react'
-import { loadSlim } from '@tsparticles/slim'
-import maison from './assets/image15.jpg'
-import evenement3 from './assets/image1.jpg'
-import babyfoot from './assets/image2.jpg'
-import evenement1 from './assets/image3.jpg'
-import evenement2 from './assets/image4.jpg'
-import grillades from './assets/image5.jpg'
-import nourriture1 from './assets/image6.jpg'
-import nourriture2 from './assets/image7.jpg'
-import nourriture3 from './assets/image8.jpg'
-import nourriture4 from './assets/image9.jpg'
-import vuejardin from './assets/image10.jpg'
-import jardin2 from './assets/image11.jpg'
-import jeuxvideos from './assets/image12.jpg'
-import karaoke from './assets/image13.jpg'
-import escalier from './assets/image14.jpg'
+import { useEffect, useMemo, useState, useRef, lazy, Suspense } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
+import Particles from "@tsparticles/react";
+import { loadSlim } from "@tsparticles/slim";
+import maison from "./assets/image15.jpg";
+import evenement3 from "./assets/image1.jpg";
+import babyfoot from "./assets/image2.jpg";
+import evenement1 from "./assets/image3.jpg";
+import evenement2 from "./assets/image4.jpg";
+import grillades from "./assets/image5.jpg";
+import nourriture1 from "./assets/image6.jpg";
+import nourriture2 from "./assets/image7.jpg";
+import nourriture3 from "./assets/image8.jpg";
+import nourriture4 from "./assets/image9.jpg";
+import vuejardin from "./assets/image10.jpg";
+import jardin2 from "./assets/image11.jpg";
+import jeuxvideos from "./assets/image12.jpg";
+import karaoke from "./assets/image13.jpg";
+import escalier from "./assets/image14.jpg";
 
-const logo = '/icon.svg'
+const logo = "/icon.svg";
 
 // Lazy loading pour les composants moins critiques
-const GalleryLightbox = lazy(() => import('./components/GalleryLightbox'))
+const GalleryLightbox = lazy(() => import("./components/GalleryLightbox"));
 
 const activities = [
-  { title: 'Location de salle pour événements', desc: 'Espaces modulables avec décoration personnalisée.', icon: '🎉' },
-  { title: 'Baby-foot', desc: 'Matches conviviaux et tournois privés.', icon: '⚽' },
-  { title: 'Piscine', desc: 'Eau claire, transats et ambiance tropicale.', icon: '🏊' },
-  { title: 'Jeux de société', desc: 'Jeux modernes et classiques pour tous.', icon: '🎲' },
-  { title: 'Karaoké & dancing', desc: 'Soirées chantantes avec sono premium.', icon: '🎤' },
-  { title: 'Grillades / Barbecue', desc: 'Espace grillades équipé.', icon: '🔥' },
-  { title: 'Jeux vidéo & simulateur', desc: 'Consoles, jeux PC et simulateur de course au volant.', icon: '🎮' },
-  { title: 'Water gun', desc: 'Batailles d\'eau conviviales pour petits et grands.', icon: '💦' },
-  { title: 'Jardin zen', desc: 'Nature calme pour se ressourcer.', icon: '🌿' },
-  { title: 'Cinéma & projection', desc: 'Écran TV 80" et son immersif.', icon: '🎬' },
-  { title: 'Anniversaires', desc: 'Forfaits enfants & adultes.', icon: '🎂' },
-  { title: 'Soirées à thème', desc: 'Quiz games, karaoké nights.', icon: '✨' },
-  { title: 'Coworking calme', desc: 'Espace zen en journée.', icon: '💼' },
-  { title: 'Photo booth', desc: 'Souvenirs instantanés.', icon: '📸' },
-]
+  {
+    title: "Location de salle pour événements",
+    desc: "Espaces modulables avec décoration personnalisée.",
+    icon: "🎉",
+  },
+  {
+    title: "Baby-foot",
+    desc: "Matches conviviaux et tournois privés.",
+    icon: "⚽",
+  },
+  {
+    title: "Piscine",
+    desc: "Eau claire, transats et ambiance tropicale.",
+    icon: "🏊",
+  },
+  {
+    title: "Jeux de société",
+    desc: "Jeux modernes et classiques pour tous.",
+    icon: "🎲",
+  },
+  {
+    title: "Karaoké & dancing",
+    desc: "Soirées chantantes avec sono premium.",
+    icon: "🎤",
+  },
+  {
+    title: "Grillades / Barbecue",
+    desc: "Espace grillades équipé.",
+    icon: "🔥",
+  },
+  {
+    title: "Jeux vidéo & simulateur",
+    desc: "Consoles, jeux PC et simulateur de course au volant.",
+    icon: "🎮",
+  },
+  {
+    title: "Water gun",
+    desc: "Batailles d'eau conviviales pour petits et grands.",
+    icon: "💦",
+  },
+  { title: "Jardin zen", desc: "Nature calme pour se ressourcer.", icon: "🌿" },
+  {
+    title: "Cinéma & projection",
+    desc: 'Écran TV 80" et son immersif.',
+    icon: "🎬",
+  },
+  { title: "Anniversaires", desc: "Forfaits enfants & adultes.", icon: "🎂" },
+  { title: "Soirées à thème", desc: "Quiz games, karaoké nights.", icon: "✨" },
+  { title: "Coworking calme", desc: "Espace zen en journée.", icon: "💼" },
+  { title: "Photo booth", desc: "Souvenirs instantanés.", icon: "📸" },
+];
 
 const gallery = [
-  { src: maison, alt: 'Vue de la maison', category: 'Piscine' },
-  { src: vuejardin, alt: 'Vue du jardin', category: 'Jardin' },
-  { src: grillades, alt: 'Espace barbecue', category: 'Grillades' },
-  { src: babyfoot, alt: 'Baby-foot', category: 'Jeux' },
-  { src: karaoke, alt: 'Karaoké', category: 'Soirée' },
-  { src: escalier, alt: 'Escalier', category: 'Espace' },
-  { src: jeuxvideos, alt: 'Aire jeux vidéo', category: 'Jeux' },
-  { src: nourriture1, alt: 'Nourriture 1', category: 'Nourriture' },
-  { src: nourriture2, alt: 'Nourriture 2', category: 'Nourriture' },
-  { src: nourriture3, alt: 'Nourriture 3', category: 'Nourriture' },
-  { src: nourriture4, alt: 'Nourriture 4', category: 'Nourriture' },
-  { src: evenement1, alt: 'Événement privé', category: 'Événement' },
-  { src: evenement2, alt: 'Salle événement', category: 'Événement' },
-  { src: evenement3, alt: 'Ambiance soirée', category: 'Soirée' },
-  { src: jardin2, alt: 'Jardin zen', category: 'Jardin' },
-]
+  { src: maison, alt: "Vue de la maison", category: "Piscine" },
+  { src: vuejardin, alt: "Vue du jardin", category: "Jardin" },
+  { src: grillades, alt: "Espace barbecue", category: "Grillades" },
+  { src: babyfoot, alt: "Baby-foot", category: "Jeux" },
+  { src: karaoke, alt: "Karaoké", category: "Soirée" },
+  { src: escalier, alt: "Escalier", category: "Espace" },
+  { src: jeuxvideos, alt: "Aire jeux vidéo", category: "Jeux" },
+  { src: nourriture1, alt: "Nourriture 1", category: "Nourriture" },
+  { src: nourriture2, alt: "Nourriture 2", category: "Nourriture" },
+  { src: nourriture3, alt: "Nourriture 3", category: "Nourriture" },
+  { src: nourriture4, alt: "Nourriture 4", category: "Nourriture" },
+  { src: evenement1, alt: "Événement privé", category: "Événement" },
+  { src: evenement2, alt: "Salle événement", category: "Événement" },
+  { src: evenement3, alt: "Ambiance soirée", category: "Soirée" },
+  { src: jardin2, alt: "Jardin zen", category: "Jardin" },
+];
 
 const stats = [
-  { label: 'Activités & espaces', value: '15+' },
-  { label: 'De jardin', value: '2000 m²' },
-  { label: 'Capacité max', value: '120 pers.' },
-  { label: 'Ouvert', value: '7j/7' },
-]
+  { label: "Activités & espaces", value: "15+" },
+  { label: "De jardin", value: "2000 m²" },
+  { label: "Capacité max", value: "120 pers." },
+  { label: "Ouvert", value: "7j/7" },
+];
 
 const rentalPackages = [
   {
-    name: 'Tafir Privatisation — Journée',
-    price: '200 000 Ar',
-    period: '/ journée (8h30 - 18h)',
-    includes: ['Accès piscine', 'Grande salle', 'Karaoké & dancing', 'Baby-foot', 'Jeux vidéo sur PC', 'Simulateur de course au volant', 'Water gun', 'Jeux de société'],
+    name: "Tafir Privatisation — Journée",
+    price: "200 000 Ar",
+    period: "/ journée (8h30 - 18h)",
+    includes: [
+      "Accès piscine",
+      "Grande salle",
+      "Karaoké & dancing",
+      "Baby-foot",
+      "Jeux vidéo sur PC",
+      "Simulateur de course au volant",
+      "Water gun",
+      "Jeux de société",
+    ],
   },
   {
-    name: 'Tafir Privatisation — Nuitée',
-    price: '200 000 Ar',
-    period: '/ nuitée (18h - 9h)',
-    includes: ['Accès piscine', 'Grande salle', 'Karaoké & dancing', 'Baby-foot', 'Jeux vidéo sur PC', 'Simulateur de course au volant', 'Water gun', 'Jeux de société'],
+    name: "Tafir Privatisation — Nuitée",
+    price: "200 000 Ar",
+    period: "/ nuitée (18h - 9h)",
+    includes: [
+      "Accès piscine",
+      "Grande salle",
+      "Karaoké & dancing",
+      "Baby-foot",
+      "Jeux vidéo sur PC",
+      "Simulateur de course au volant",
+      "Water gun",
+      "Jeux de société",
+    ],
     featured: true,
   },
-]
+];
 
 const eventPackage = {
-  name: 'Réception événementielle',
-  price: '150 000 Ar',
-  period: '/ jour (8h30 - 18h)',
-  capacity: 'Jusqu\'à 50 personnes',
-  includes: ['Salle dinatoire', 'Cuisine équipée', 'Couvert complet', 'Nappage de table', 'Housses de chaise', 'Décoration fleurs', 'Sonorisation'],
-}
+  name: "Réception événementielle",
+  price: "150 000 Ar",
+  period: "/ jour (8h30 - 18h)",
+  capacity: "Jusqu'à 50 personnes",
+  includes: [
+    "Salle dinatoire",
+    "Cuisine équipée",
+    "Couvert complet",
+    "Nappage de table",
+    "Housses de chaise",
+    "Décoration fleurs",
+    "Sonorisation",
+  ],
+};
 
 const rooms = [
   {
-    name: 'Chambre double',
-    price: '45 000 Ar',
-    features: ['Lit 2 places', 'Toilette extérieure', 'Climatisée', 'Eau chaude', 'Wifi', 'Terrasse privée'],
+    name: "Chambre double",
+    price: "45 000 Ar",
+    features: [
+      "Lit 2 places",
+      "Toilette extérieure",
+      "Climatisée",
+      "Eau chaude",
+      "Wifi",
+      "Terrasse privée",
+    ],
   },
   {
-    name: 'Chambre Twin',
-    price: '55 000 Ar',
-    features: ['Lit 2 places + lit monoplace', 'Toilette extérieure', 'Climatisée', 'Eau chaude', 'Wifi', 'Terrasse privée', 'TV'],
+    name: "Chambre Twin",
+    price: "55 000 Ar",
+    features: [
+      "Lit 2 places + lit monoplace",
+      "Toilette extérieure",
+      "Climatisée",
+      "Eau chaude",
+      "Wifi",
+      "Terrasse privée",
+      "TV",
+    ],
     featured: true,
   },
   {
-    name: 'Chambre double avec TV',
-    price: '50 000 Ar',
-    features: ['Lit 2 places', 'Toilette extérieure', 'Climatisée', 'Eau chaude', 'Wifi', 'Terrasse privée', 'TV'],
+    name: "Chambre double avec TV",
+    price: "50 000 Ar",
+    features: [
+      "Lit 2 places",
+      "Toilette extérieure",
+      "Climatisée",
+      "Eau chaude",
+      "Wifi",
+      "Terrasse privée",
+      "TV",
+    ],
   },
   {
-    name: 'Chambre double, toilette privée',
-    price: '60 000 Ar',
-    features: ['Lit 2 places', 'Toilette privée', 'Climatisée', 'Eau chaude', 'Wifi', 'Terrasse privée', 'TV'],
+    name: "Chambre double, toilette privée",
+    price: "60 000 Ar",
+    features: [
+      "Lit 2 places",
+      "Toilette privée",
+      "Climatisée",
+      "Eau chaude",
+      "Wifi",
+      "Terrasse privée",
+      "TV",
+    ],
   },
-]
+];
 
 const dining = {
   items: [
-    { name: 'Plat du jour', price: '10 000 Ar' },
-    { name: 'Plat complet (entrée + résistance + dessert)', price: '20 000 Ar' },
+    { name: "Plat du jour", price: "10 000 Ar" },
+    {
+      name: "Plat complet (entrée + résistance + dessert)",
+      price: "20 000 Ar",
+    },
   ],
-  note: 'Vous pouvez apporter votre propre nourriture — les boissons sont servies sur place.',
-}
+  note: "Vous pouvez apporter votre propre nourriture — les boissons sont servies sur place.",
+};
 
-const amenities = ['🎬 Cinéma', '🔥 Barbecue', '🍳 Cuisine équipée + frigo', '🔊 Sonorisation JBL', '📺 Écran TV 80"', '📶 Wifi gratuit', '🚗 Parking sécurisé']
+const amenities = [
+  "🎬 Cinéma",
+  "🔥 Barbecue",
+  "🍳 Cuisine équipée + frigo",
+  "🔊 Sonorisation JBL",
+  '📺 Écran TV 80"',
+  "📶 Wifi gratuit",
+  "🚗 Parking sécurisé",
+];
 
 const faqs = [
   {
-    q: 'Quels sont les horaires pour les chambres ?',
-    a: 'Le check-in se fait à partir de 10h et le check-out le lendemain à 10h.',
+    q: "Quels sont les horaires pour les chambres ?",
+    a: "Le check-in se fait à partir de 10h et le check-out le lendemain à 10h.",
   },
   {
-    q: 'Peut-on apporter notre propre nourriture ?',
-    a: 'Oui, vous pouvez apporter votre nourriture. Les boissons, elles, sont servies sur place. Un service de restauration sur commande est aussi disponible (plat du jour ou plat complet).',
+    q: "Peut-on apporter notre propre nourriture ?",
+    a: "Oui, vous pouvez apporter votre nourriture. Les boissons, elles, sont servies sur place. Un service de restauration sur commande est aussi disponible (plat du jour ou plat complet).",
   },
   {
-    q: 'Quelle est la différence entre la privatisation Tafir et la réception événementielle ?',
-    a: 'La privatisation Tafir (journée ou nuitée, 200 000 Ar) donne accès à l\'ensemble des loisirs : piscine, salle, karaoké, baby-foot, jeux vidéo, simulateur de course, water gun. La réception événementielle (150 000 Ar/jour, jusqu\'à 50 personnes) est plutôt un pack traiteur pour un événement formel : salle dinatoire, cuisine équipée, couverts, nappage, déco et sonorisation.',
+    q: "Quelle est la différence entre la privatisation Tafir et la réception événementielle ?",
+    a: "La privatisation Tafir (journée ou nuitée, 200 000 Ar) donne accès à l'ensemble des loisirs : piscine, salle, karaoké, baby-foot, jeux vidéo, simulateur de course, water gun. La réception événementielle (150 000 Ar/jour, jusqu'à 50 personnes) est plutôt un pack traiteur pour un événement formel : salle dinatoire, cuisine équipée, couverts, nappage, déco et sonorisation.",
   },
   {
-    q: 'Quels moyens de paiement acceptez-vous ?',
-    a: 'Nous acceptons les espèces et le mobile money.',
+    q: "Quels moyens de paiement acceptez-vous ?",
+    a: "Nous acceptons les espèces et le mobile money.",
   },
   {
-    q: 'Le wifi et le parking sont-ils inclus ?',
-    a: 'Oui, le wifi gratuit et un parking sécurisé sont disponibles pour tous nos visiteurs.',
+    q: "Le wifi et le parking sont-ils inclus ?",
+    a: "Oui, le wifi gratuit et un parking sécurisé sont disponibles pour tous nos visiteurs.",
   },
   {
-    q: 'Quelle est la capacité maximale du site ?',
-    a: 'L\'espace peut accueillir jusqu\'à 120 personnes, avec une capacité de 50 personnes pour la formule réception événementielle.',
+    q: "Quelle est la capacité maximale du site ?",
+    a: "L'espace peut accueillir jusqu'à 120 personnes, avec une capacité de 50 personnes pour la formule réception événementielle.",
   },
   {
-    q: 'Comment réserver et sous quel délai avez-vous une réponse ?',
-    a: 'Vous pouvez réserver via WhatsApp, par téléphone ou via le formulaire ci-dessous. Nous répondons sous 24h.',
+    q: "Comment réserver et sous quel délai avez-vous une réponse ?",
+    a: "Vous pouvez réserver directement par WhatsApp ou par téléphone. Nous répondons sous 24h.",
   },
-]
-
-const teamBuildingActivities = [
-  { name: 'Chasse au trésor', duration: '2h', price: '50 000 Ar' },
-  { name: 'Tournoi baby-foot', duration: '3h', price: '80 000 Ar' },
-  { name: 'Atelier cuisine', duration: '3h', price: '120 000 Ar' },
-  { name: 'Karaoké battle', duration: '2h', price: '60 000 Ar' },
-]
+];
 
 const revealVariant = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
-}
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+};
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -175,147 +277,129 @@ const staggerContainer = {
       delayChildren: 0.2,
     },
   },
-}
+};
 
 function App() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [lightbox, setLightbox] = useState(null)
-  const [formStatus, setFormStatus] = useState({ type: '', message: '' })
-  const [galleryFilter, setGalleryFilter] = useState('Tous')
-  const [videoError, setVideoError] = useState(false)
-  const [activeSection, setActiveSection] = useState('hero')
-  const [showBackToTop, setShowBackToTop] = useState(false)
-  const [openFaq, setOpenFaq] = useState(0)
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [lightbox, setLightbox] = useState(null);
+  const [galleryFilter, setGalleryFilter] = useState("Tous");
+  const [videoError, setVideoError] = useState(false);
+  const [activeSection, setActiveSection] = useState("hero");
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [openFaq, setOpenFaq] = useState(0);
 
-  const heroRef = useRef(null)
-  const activitiesRef = useRef(null)
-  const formRef = useRef(null)
+  const heroRef = useRef(null);
+  const activitiesRef = useRef(null);
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
-    offset: ['start start', 'end start'],
-  })
+    offset: ["start start", "end start"],
+  });
 
-  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3])
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1])
+  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
 
   useEffect(() => {
     // Optimisation du chargement initial
     const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1400)
+      setLoading(false);
+    }, 1400);
 
     // Préchargement des images critiques
     const preloadImages = () => {
-      const criticalImages = gallery.slice(0, 3).map(img => img.src)
-      criticalImages.forEach(src => {
-        const link = document.createElement('link')
-        link.rel = 'preload'
-        link.as = 'image'
-        link.href = src
-        document.head.appendChild(link)
-      })
-    }
-    preloadImages()
+      const criticalImages = gallery.slice(0, 3).map((img) => img.src);
+      criticalImages.forEach((src) => {
+        const link = document.createElement("link");
+        link.rel = "preload";
+        link.as = "image";
+        link.href = src;
+        document.head.appendChild(link);
+      });
+    };
+    preloadImages();
 
-    return () => clearTimeout(timer)
-  }, [])
+    return () => clearTimeout(timer);
+  }, []);
 
   // Repérage de la section active (scroll-spy) + bouton retour en haut
   useEffect(() => {
-    const sectionIds = ['hero', 'about', 'activities', 'gallery', 'pricing', 'faq', 'contact']
+    const sectionIds = [
+      "hero",
+      "about",
+      "activities",
+      "gallery",
+      "pricing",
+      "faq",
+      "contact",
+    ];
     const sections = sectionIds
       .map((id) => document.getElementById(id))
-      .filter(Boolean)
+      .filter(Boolean);
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveSection(entry.target.id)
+            setActiveSection(entry.target.id);
           }
-        })
+        });
       },
-      { rootMargin: '-45% 0px -50% 0px' },
-    )
-    sections.forEach((section) => observer.observe(section))
+      { rootMargin: "-45% 0px -50% 0px" },
+    );
+    sections.forEach((section) => observer.observe(section));
 
-    const handleScroll = () => setShowBackToTop(window.scrollY > 600)
-    window.addEventListener('scroll', handleScroll, { passive: true })
+    const handleScroll = () => setShowBackToTop(window.scrollY > 600);
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      observer.disconnect()
-      window.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
+      observer.disconnect();
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   // Smooth scroll pour les ancres
   const handleAnchorClick = (e, href) => {
-    e.preventDefault()
-    setMenuOpen(false)
-    const element = document.querySelector(href)
+    e.preventDefault();
+    setMenuOpen(false);
+    const element = document.querySelector(href);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }
-
-  // Gestionnaire formulaire
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setFormStatus({ type: 'loading', message: 'Envoi en cours...' })
-    
-    try {
-      const formData = new FormData(e.target)
-      const response = await fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(formData).toString(),
-      })
-      
-      if (response.ok) {
-        setFormStatus({ type: 'success', message: 'Demande envoyée ! Nous vous rappelons sous 24h.' })
-        e.target.reset()
-      } else {
-        throw new Error('Erreur réseau')
-      }
-    } catch {
-      setFormStatus({ type: 'error', message: 'Une erreur est survenue. Contactez-nous par WhatsApp.' })
-    }
-  }
+  };
 
   const particlesInit = useMemo(
     () => async (engine) => {
-      await loadSlim(engine)
+      await loadSlim(engine);
     },
     [],
-  )
+  );
 
   const particlesOptions = useMemo(
     () => ({
-      background: { color: { value: 'transparent' } },
+      background: { color: { value: "transparent" } },
       fpsLimit: 60,
       particles: {
-        color: { value: '#FDF6EC' },
+        color: { value: "#FDF6EC" },
         links: { enable: false },
         move: {
           enable: true,
           speed: 0.3,
-          direction: 'none',
+          direction: "none",
           random: true,
           straight: false,
-          outModes: { default: 'bounce' }
+          outModes: { default: "bounce" },
         },
         number: {
           value: 16,
-          density: { enable: true, area: 800 }
+          density: { enable: true, area: 800 },
         },
         opacity: {
           value: 0.35,
           random: true,
-          animation: { enable: true, speed: 0.6, minimumValue: 0.15 }
+          animation: { enable: true, speed: 0.6, minimumValue: 0.15 },
         },
-        shape: { type: 'circle' },
+        shape: { type: "circle" },
         size: {
           value: { min: 1, max: 3 },
           random: true,
@@ -324,23 +408,29 @@ function App() {
       detectRetina: true,
     }),
     [],
-  )
+  );
 
   const navLinks = [
-    { label: 'À propos', href: '#about' },
-    { label: 'Activités', href: '#activities' },
-    { label: 'Galerie', href: '#gallery' },
-    { label: 'Tarifs', href: '#pricing' },
-    { label: 'FAQ', href: '#faq' },
-    { label: 'Contact', href: '#contact' },
-  ]
+    { label: "À propos", href: "#about" },
+    { label: "Activités", href: "#activities" },
+    { label: "Galerie", href: "#gallery" },
+    { label: "Tarifs", href: "#pricing" },
+    { label: "FAQ", href: "#faq" },
+    { label: "Contact", href: "#contact" },
+  ];
 
-  const galleryCategories = ['Tous', ...new Set(gallery.map(img => img.category))]
+  const galleryCategories = [
+    "Tous",
+    ...new Set(gallery.map((img) => img.category)),
+  ];
 
   const filteredGallery = useMemo(
-    () => gallery.filter(img => galleryFilter === 'Tous' || img.category === galleryFilter),
+    () =>
+      gallery.filter(
+        (img) => galleryFilter === "Tous" || img.category === galleryFilter,
+      ),
     [galleryFilter],
-  )
+  );
 
   return (
     <div className="relative text-[#2B211B]">
@@ -357,11 +447,11 @@ function App() {
             <div className="text-center">
               <motion.img
                 src={logo}
-                alt="Ny Tranonay"
+                alt="Tranonay"
                 className="loading-logo mx-auto rounded-full shadow-2xl"
                 initial={{ scale: 0.85, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
               />
               <motion.p
                 className="mt-4 text-white/80 text-sm"
@@ -379,43 +469,45 @@ function App() {
       {/* Header Sticky */}
       <header className="fixed inset-x-0 top-0 z-40 border-b border-white/30 bg-white/90 backdrop-blur-lg shadow-sm">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:py-4">
-          <a 
-            href="#hero" 
+          <a
+            href="#hero"
             className="flex items-center gap-2 text-lg font-bold text-[#2B211B]"
-            onClick={(e) => handleAnchorClick(e, '#hero')}
+            onClick={(e) => handleAnchorClick(e, "#hero")}
           >
             <motion.img
               src={logo}
-              alt="Ny Tranonay Logo"
+              alt="Tranonay Logo"
               className="h-10 w-10 rounded-full object-cover shadow-md"
               whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ type: 'spring', stiffness: 300 }}
+              transition={{ type: "spring", stiffness: 300 }}
             />
             <span className="hidden sm:inline">Tranonay</span>
           </a>
 
           {/* Desktop Navigation */}
           <div className="hidden items-center gap-6 md:flex">
-            {navLinks.filter(link => link.href !== '#contact').map((link) => {
-              const isActive = activeSection === link.href.slice(1)
-              return (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className={`nav-link relative text-sm font-medium ${isActive ? 'text-[#C2410C]' : ''}`}
-                  onClick={(e) => handleAnchorClick(e, link.href)}
-                >
-                  {link.label}
-                  <span
-                    className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-[#C2410C] to-[#047857] transition-all duration-300 ${isActive ? 'w-full' : 'w-0'}`}
-                  />
-                </a>
-              )
-            })}
+            {navLinks
+              .filter((link) => link.href !== "#contact")
+              .map((link) => {
+                const isActive = activeSection === link.href.slice(1);
+                return (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className={`nav-link relative text-sm font-medium ${isActive ? "text-[#C2410C]" : ""}`}
+                    onClick={(e) => handleAnchorClick(e, link.href)}
+                  >
+                    {link.label}
+                    <span
+                      className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-[#C2410C] to-[#047857] transition-all duration-300 ${isActive ? "w-full" : "w-0"}`}
+                    />
+                  </a>
+                );
+              })}
             <a
               href="#contact"
               className="btn-primary"
-              onClick={(e) => handleAnchorClick(e, '#contact')}
+              onClick={(e) => handleAnchorClick(e, "#contact")}
             >
               Réserver
             </a>
@@ -461,7 +553,9 @@ function App() {
                     key={link.href}
                     href={link.href}
                     className={`touch-target flex items-center border-b border-slate-100 py-3 text-base font-medium last:border-0 ${
-                      activeSection === link.href.slice(1) ? 'text-[#C2410C]' : 'text-[#2B211B]'
+                      activeSection === link.href.slice(1)
+                        ? "text-[#C2410C]"
+                        : "text-[#2B211B]"
                     }`}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -474,7 +568,7 @@ function App() {
                 <a
                   href="#contact"
                   className="btn-primary mt-4"
-                  onClick={(e) => handleAnchorClick(e, '#contact')}
+                  onClick={(e) => handleAnchorClick(e, "#contact")}
                 >
                   Réserver maintenant
                 </a>
@@ -506,7 +600,7 @@ function App() {
               <source src="/videos/hero-background.mp4" type="video/mp4" />
             </video>
           )}
-          
+
           {/* Fallback Image */}
           <motion.div
             className="absolute inset-0 bg-cover bg-center"
@@ -521,7 +615,11 @@ function App() {
           <div className="absolute inset-0 bg-gradient-to-br from-[#C2410C]/90 to-[#047857]/90" />
 
           {/* Particles */}
-          <Particles id="tsparticles" init={particlesInit} options={particlesOptions} />
+          <Particles
+            id="tsparticles"
+            init={particlesInit}
+            options={particlesOptions}
+          />
 
           {/* Hero Content */}
           <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-32">
@@ -537,37 +635,37 @@ function App() {
                 </span>
               </motion.div>
 
-              <motion.h1 
+              <motion.h1
                 variants={revealVariant}
                 className="text-4xl font-bold text-white sm:text-5xl lg:text-6xl xl:text-7xl"
               >
-                L&apos;espace loisir{' '}
+                L&apos;espace loisir{" "}
                 <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
                   immersif
                 </span>
               </motion.h1>
 
-              <motion.p 
+              <motion.p
                 variants={revealVariant}
                 className="mt-6 max-w-2xl text-lg text-white/90 sm:text-xl"
               >
-                Piscine, baby-foot, karaoké, grillades et jardin zen : tout est réuni pour une
-                expérience inoubliable à Madagascar.
+                Piscine, baby-foot, karaoké, grillades et jardin zen : tout est
+                réuni pour une expérience inoubliable à Madagascar.
               </motion.p>
 
-              <motion.div 
+              <motion.div
                 variants={revealVariant}
                 className="mt-8 flex flex-wrap gap-4"
               >
                 <a
                   href="#contact"
                   className="btn-primary relative overflow-hidden"
-                  onClick={(e) => handleAnchorClick(e, '#contact')}
+                  onClick={(e) => handleAnchorClick(e, "#contact")}
                 >
                   <span className="relative z-10">Réserver maintenant</span>
                   <motion.div
                     className="absolute inset-0 bg-white"
-                    initial={{ x: '-100%' }}
+                    initial={{ x: "-100%" }}
                     whileHover={{ x: 0 }}
                     transition={{ duration: 0.3 }}
                     style={{ opacity: 0.2 }}
@@ -576,13 +674,13 @@ function App() {
                 <a
                   href="#activities"
                   className="btn-outline border-white text-white hover:bg-white hover:text-[#2B211B]"
-                  onClick={(e) => handleAnchorClick(e, '#activities')}
+                  onClick={(e) => handleAnchorClick(e, "#activities")}
                 >
                   Découvrir les activités
                 </a>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 variants={revealVariant}
                 className="mt-8 flex flex-wrap gap-3"
               >
@@ -592,7 +690,7 @@ function App() {
               </motion.div>
 
               {/* Stats */}
-              <motion.div 
+              <motion.div
                 variants={revealVariant}
                 className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4"
               >
@@ -605,7 +703,7 @@ function App() {
                       className="text-2xl font-bold text-white"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ delay: 0.5, type: 'spring' }}
+                      transition={{ delay: 0.5, type: "spring" }}
                     >
                       {stat.value}
                     </motion.p>
@@ -633,50 +731,62 @@ function App() {
         </section>
 
         {/* About Section */}
-        <section id="about" className="section-min section-pattern bg-brand-cream content-visibility-auto">
+        <section
+          id="about"
+          className="section-min section-pattern bg-brand-cream content-visibility-auto"
+        >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-24">
             <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
               <motion.div
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true, margin: '-100px' }}
+                viewport={{ once: true, margin: "-100px" }}
                 variants={staggerContainer}
               >
-                <motion.h2 
-                  variants={revealVariant}
-                  className="section-title"
-                >
+                <motion.h2 variants={revealVariant} className="section-title">
                   Un lieu complet pour se détendre et célébrer
                 </motion.h2>
-                
-                <motion.p 
-                  variants={revealVariant}
-                  className="section-subtitle"
-                >
-                  Tranonay est un espace de loisir multifonctionnel à Ambohimasina, conçu pour les
-                  familles, entreprises et groupes d&apos;amis. Ici, chaque zone est pensée pour la
-                  convivialité et la détente.
+
+                <motion.p variants={revealVariant} className="section-subtitle">
+                  Tranonay est un espace de loisir multifonctionnel à
+                  Ambohimasina, conçu pour les familles, entreprises et groupes
+                  d&apos;amis. Ici, chaque zone est pensée pour la convivialité
+                  et la détente.
                 </motion.p>
 
-                <motion.div 
+                <motion.div
                   variants={revealVariant}
                   className="mt-8 grid gap-4 sm:grid-cols-2"
                 >
                   {[
-                    { title: '📍 Localisation stratégique', desc: 'À 10 min du CUR, accès rapide et sécurisé.' },
-                    { title: '🌿 Ambiance nature', desc: 'Jardin luxuriant de 2000m², calme et ressourçant.' },
-                    { title: '🤝 Services partenaires', desc: 'Traiteur, photographe, location de matériel.' },
-                    { title: '📲 Réservations faciles', desc: 'WhatsApp, téléphone ou formulaire en ligne.' },
+                    {
+                      title: "📍 Localisation stratégique",
+                      desc: "À 10 min du CUR, accès rapide et sécurisé.",
+                    },
+                    {
+                      title: "🌿 Ambiance nature",
+                      desc: "Jardin luxuriant de 2000m², calme et ressourçant.",
+                    },
+                    {
+                      title: "🤝 Services partenaires",
+                      desc: "Traiteur, photographe, location de matériel.",
+                    },
+                    {
+                      title: "📲 Réservations faciles",
+                      desc: "Par WhatsApp ou par téléphone, réponse sous 24h.",
+                    },
                   ].map((item) => (
                     <div key={item.title} className="card-surface">
-                      <h3 className="text-lg font-semibold text-[#2B211B]">{item.title}</h3>
+                      <h3 className="text-lg font-semibold text-[#2B211B]">
+                        {item.title}
+                      </h3>
                       <p className="mt-2 text-sm text-slate-600">{item.desc}</p>
                     </div>
                   ))}
                 </motion.div>
 
                 {/* Local SEO Badge */}
-                <motion.div 
+                <motion.div
                   variants={revealVariant}
                   className="mt-8 flex flex-wrap gap-2"
                 >
@@ -704,7 +814,9 @@ function App() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                   <div className="absolute bottom-0 left-0 p-6 text-white">
-                    <h3 className="text-xl font-semibold">Espace loisirs Ambohimasina</h3>
+                    <h3 className="text-xl font-semibold">
+                      Espace loisirs Ambohimasina
+                    </h3>
                     <p className="mt-2 text-sm text-white/80">
                       Jardin, piscine, salle événement, grillades
                     </p>
@@ -716,7 +828,11 @@ function App() {
         </section>
 
         {/* Activities Section */}
-        <section id="activities" ref={activitiesRef} className="section-min content-visibility-auto">
+        <section
+          id="activities"
+          ref={activitiesRef}
+          className="section-min content-visibility-auto"
+        >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-24">
             <motion.div
               initial="hidden"
@@ -728,8 +844,12 @@ function App() {
               <motion.h2 variants={revealVariant} className="section-title">
                 Nos activités
               </motion.h2>
-              <motion.p variants={revealVariant} className="section-subtitle mx-auto">
-                15 expériences uniques pour tous les âges : loisirs, nature, événements et détente.
+              <motion.p
+                variants={revealVariant}
+                className="section-subtitle mx-auto"
+              >
+                15 expériences uniques pour tous les âges : loisirs, nature,
+                événements et détente.
               </motion.p>
             </motion.div>
 
@@ -738,7 +858,7 @@ function App() {
               variants={staggerContainer}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, margin: '-50px' }}
+              viewport={{ once: true, margin: "-50px" }}
             >
               {activities.map((item, index) => (
                 <motion.div
@@ -747,13 +867,15 @@ function App() {
                   custom={index}
                   className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg"
                   whileHover={{ y: -4 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#C2410C] to-[#047857] transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100" />
 
                   <div className="text-4xl">{item.icon}</div>
 
-                  <h3 className="mt-4 text-lg font-semibold text-[#2B211B]">{item.title}</h3>
+                  <h3 className="mt-4 text-lg font-semibold text-[#2B211B]">
+                    {item.title}
+                  </h3>
                   <p className="mt-2 text-sm text-slate-600">{item.desc}</p>
                 </motion.div>
               ))}
@@ -762,7 +884,10 @@ function App() {
         </section>
 
         {/* Gallery Section */}
-        <section id="gallery" className="section-min bg-brand-cream content-visibility-auto">
+        <section
+          id="gallery"
+          className="section-min bg-brand-cream content-visibility-auto"
+        >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-24">
             <motion.div
               initial="hidden"
@@ -774,7 +899,10 @@ function App() {
               <motion.h2 variants={revealVariant} className="section-title">
                 Galerie immersive
               </motion.h2>
-              <motion.p variants={revealVariant} className="section-subtitle mx-auto">
+              <motion.p
+                variants={revealVariant}
+                className="section-subtitle mx-auto"
+              >
                 Découvrez l&apos;ambiance réelle de nos espaces et événements.
               </motion.p>
             </motion.div>
@@ -792,8 +920,8 @@ function App() {
                   onClick={() => setGalleryFilter(cat)}
                   className={`pill touch-target transition-all ${
                     galleryFilter === cat
-                      ? 'bg-[#C2410C] text-white'
-                      : 'bg-white text-[#2B211B] hover:bg-[#C2410C]/10'
+                      ? "bg-[#C2410C] text-white"
+                      : "bg-white text-[#2B211B] hover:bg-[#C2410C]/10"
                   }`}
                 >
                   {cat}
@@ -809,37 +937,40 @@ function App() {
               viewport={{ once: true }}
             >
               {filteredGallery.map((item) => (
-                  <motion.button
-                    key={item.src}
-                    variants={revealVariant}
-                    className="gallery-item group relative aspect-square overflow-hidden rounded-xl"
-                    onClick={() => setLightbox(item)}
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <img
-                      src={item.src}
-                      alt={item.alt}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="gallery-overlay absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                      <div className="absolute bottom-0 left-0 p-4 text-white">
-                        <p className="text-sm font-semibold">{item.alt}</p>
-                        <span className="mt-1 inline-block rounded-full bg-white/20 px-2 py-0.5 text-xs">
-                          {item.category}
-                        </span>
-                      </div>
+                <motion.button
+                  key={item.src}
+                  variants={revealVariant}
+                  className="gallery-item group relative aspect-square overflow-hidden rounded-xl"
+                  onClick={() => setLightbox(item)}
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <img
+                    src={item.src}
+                    alt={item.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="gallery-overlay absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    <div className="absolute bottom-0 left-0 p-4 text-white">
+                      <p className="text-sm font-semibold">{item.alt}</p>
+                      <span className="mt-1 inline-block rounded-full bg-white/20 px-2 py-0.5 text-xs">
+                        {item.category}
+                      </span>
                     </div>
-                  </motion.button>
-                ))}
+                  </div>
+                </motion.button>
+              ))}
             </motion.div>
           </div>
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="section-min bg-brand-cream content-visibility-auto">
+        <section
+          id="pricing"
+          className="section-min bg-brand-cream content-visibility-auto"
+        >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-24">
             <motion.div
               initial="hidden"
@@ -851,8 +982,12 @@ function App() {
               <motion.h2 variants={revealVariant} className="section-title">
                 Tarifs
               </motion.h2>
-              <motion.p variants={revealVariant} className="section-subtitle mx-auto">
-                Des formules claires pour chaque occasion : journée entre amis, réception formelle ou nuit sur place.
+              <motion.p
+                variants={revealVariant}
+                className="section-subtitle mx-auto"
+              >
+                Des formules claires pour chaque occasion : journée entre amis,
+                réception formelle ou nuit sur place.
               </motion.p>
             </motion.div>
 
@@ -865,7 +1000,7 @@ function App() {
                 <motion.div
                   key={plan.name}
                   className={`pricing-card relative rounded-2xl bg-white p-6 shadow-lg ${
-                    plan.featured ? 'border-2 border-[#C2410C]' : ''
+                    plan.featured ? "border-2 border-[#C2410C]" : ""
                   }`}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -878,14 +1013,23 @@ function App() {
                       🌙 Idéal soirée
                     </span>
                   )}
-                  <h4 className="text-xl font-bold text-[#2B211B]">{plan.name}</h4>
+                  <h4 className="text-xl font-bold text-[#2B211B]">
+                    {plan.name}
+                  </h4>
                   <div className="mt-4">
-                    <span className="text-3xl font-bold text-[#C2410C]">{plan.price}</span>
-                    <span className="ml-2 text-sm text-slate-500">{plan.period}</span>
+                    <span className="text-3xl font-bold text-[#C2410C]">
+                      {plan.price}
+                    </span>
+                    <span className="ml-2 text-sm text-slate-500">
+                      {plan.period}
+                    </span>
                   </div>
                   <ul className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {plan.includes.map((item) => (
-                      <li key={item} className="flex items-center gap-2 text-sm">
+                      <li
+                        key={item}
+                        className="flex items-center gap-2 text-sm"
+                      >
                         <span className="text-[#047857]">✓</span>
                         {item}
                       </li>
@@ -894,7 +1038,7 @@ function App() {
                   <a
                     href="#contact"
                     className="mt-6 block w-full rounded-xl border-2 border-[#C2410C] py-3 text-center font-semibold text-[#C2410C] transition hover:bg-[#C2410C] hover:text-white"
-                    onClick={(e) => handleAnchorClick(e, '#contact')}
+                    onClick={(e) => handleAnchorClick(e, "#contact")}
                   >
                     Réserver cette formule
                   </a>
@@ -914,11 +1058,15 @@ function App() {
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h4 className="text-xl font-bold">{eventPackage.name}</h4>
-                <span className="rounded-full bg-white/20 px-3 py-1 text-sm">{eventPackage.capacity}</span>
+                <span className="rounded-full bg-white/20 px-3 py-1 text-sm">
+                  {eventPackage.capacity}
+                </span>
               </div>
               <div className="mt-3">
                 <span className="text-3xl font-bold">{eventPackage.price}</span>
-                <span className="ml-2 text-sm text-white/80">{eventPackage.period}</span>
+                <span className="ml-2 text-sm text-white/80">
+                  {eventPackage.period}
+                </span>
               </div>
               <ul className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {eventPackage.includes.map((item) => (
@@ -931,7 +1079,7 @@ function App() {
               <a
                 href="#contact"
                 className="mt-6 block w-full rounded-xl bg-white py-3 text-center font-semibold text-[#C2410C] transition hover:bg-white/90"
-                onClick={(e) => handleAnchorClick(e, '#contact')}
+                onClick={(e) => handleAnchorClick(e, "#contact")}
               >
                 Demander un devis
               </a>
@@ -949,7 +1097,7 @@ function App() {
                 <motion.div
                   key={room.name}
                   className={`pricing-card relative rounded-2xl bg-white p-5 shadow-lg ${
-                    room.featured ? 'border-2 border-[#C2410C]' : ''
+                    room.featured ? "border-2 border-[#C2410C]" : ""
                   }`}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -957,14 +1105,21 @@ function App() {
                   transition={{ delay: index * 0.08 }}
                   whileHover={{ y: -4 }}
                 >
-                  <h4 className="text-base font-bold text-[#2B211B]">{room.name}</h4>
+                  <h4 className="text-base font-bold text-[#2B211B]">
+                    {room.name}
+                  </h4>
                   <div className="mt-2">
-                    <span className="text-2xl font-bold text-[#C2410C]">{room.price}</span>
+                    <span className="text-2xl font-bold text-[#C2410C]">
+                      {room.price}
+                    </span>
                     <span className="ml-1 text-xs text-slate-500">/nuit</span>
                   </div>
                   <ul className="mt-4 space-y-1.5">
                     {room.features.map((item) => (
-                      <li key={item} className="flex items-start gap-2 text-xs text-slate-600">
+                      <li
+                        key={item}
+                        className="flex items-start gap-2 text-xs text-slate-600"
+                      >
                         <span className="mt-0.5 text-[#047857]">✓</span>
                         {item}
                       </li>
@@ -977,22 +1132,33 @@ function App() {
             {/* Restauration & équipements */}
             <div className="mt-14 grid gap-6 lg:grid-cols-2">
               <div className="card-surface">
-                <h4 className="text-lg font-semibold text-[#2B211B]">🍽️ Restauration</h4>
+                <h4 className="text-lg font-semibold text-[#2B211B]">
+                  🍽️ Restauration
+                </h4>
                 <ul className="mt-4 space-y-2">
                   {dining.items.map((item) => (
-                    <li key={item.name} className="flex items-center justify-between text-sm">
+                    <li
+                      key={item.name}
+                      className="flex items-center justify-between text-sm"
+                    >
                       <span>{item.name}</span>
-                      <span className="font-semibold text-[#C2410C]">{item.price}</span>
+                      <span className="font-semibold text-[#C2410C]">
+                        {item.price}
+                      </span>
                     </li>
                   ))}
                 </ul>
                 <p className="mt-4 text-xs text-slate-500">{dining.note}</p>
               </div>
               <div className="card-surface">
-                <h4 className="text-lg font-semibold text-[#2B211B]">✨ Équipements inclus</h4>
+                <h4 className="text-lg font-semibold text-[#2B211B]">
+                  ✨ Équipements inclus
+                </h4>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {amenities.map((item) => (
-                    <span key={item} className="pill bg-brand-cream">{item}</span>
+                    <span key={item} className="pill bg-brand-cream">
+                      {item}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -1013,7 +1179,10 @@ function App() {
               <motion.h2 variants={revealVariant} className="section-title">
                 Questions fréquentes
               </motion.h2>
-              <motion.p variants={revealVariant} className="section-subtitle mx-auto">
+              <motion.p
+                variants={revealVariant}
+                className="section-subtitle mx-auto"
+              >
                 Les réponses aux questions qu'on nous pose le plus souvent.
               </motion.p>
             </motion.div>
@@ -1026,7 +1195,7 @@ function App() {
               viewport={{ once: true }}
             >
               {faqs.map((item, index) => {
-                const isOpen = openFaq === index
+                const isOpen = openFaq === index;
                 return (
                   <motion.div
                     key={item.q}
@@ -1039,9 +1208,11 @@ function App() {
                       onClick={() => setOpenFaq(isOpen ? -1 : index)}
                       aria-expanded={isOpen}
                     >
-                      <span className="font-semibold text-[#2B211B]">{item.q}</span>
+                      <span className="font-semibold text-[#2B211B]">
+                        {item.q}
+                      </span>
                       <span
-                        className={`shrink-0 text-xl text-[#C2410C] transition-transform duration-300 ${isOpen ? 'rotate-45' : ''}`}
+                        className={`shrink-0 text-xl text-[#C2410C] transition-transform duration-300 ${isOpen ? "rotate-45" : ""}`}
                         aria-hidden="true"
                       >
                         +
@@ -1051,17 +1222,19 @@ function App() {
                       {isOpen && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
+                          animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25, ease: 'easeInOut' }}
+                          transition={{ duration: 0.25, ease: "easeInOut" }}
                           className="overflow-hidden"
                         >
-                          <p className="px-5 pb-5 text-sm leading-relaxed text-slate-600">{item.a}</p>
+                          <p className="px-5 pb-5 text-sm leading-relaxed text-slate-600">
+                            {item.a}
+                          </p>
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </motion.div>
-                )
+                );
               })}
             </motion.div>
           </div>
@@ -1069,222 +1242,96 @@ function App() {
 
         {/* Contact Section */}
         <section id="contact" className="section-min content-visibility-auto">
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-24">
-            <div className="grid gap-12 lg:grid-cols-2">
-              <motion.div
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={staggerContainer}
+          <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 lg:py-24">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={staggerContainer}
+            >
+              <motion.h2 variants={revealVariant} className="section-title">
+                Contact & réservation
+              </motion.h2>
+              <motion.p
+                variants={revealVariant}
+                className="section-subtitle mx-auto"
               >
-                <motion.h2 variants={revealVariant} className="section-title">
-                  Contact & réservation
-                </motion.h2>
-                <motion.p variants={revealVariant} className="section-subtitle">
-                  Réservez votre date ou contactez-nous directement via WhatsApp ou téléphone.
-                </motion.p>
+                Pas de réservation en ligne : contactez-nous directement par
+                WhatsApp ou par téléphone, on s'occupe du reste.
+              </motion.p>
 
-                <motion.div 
-                  variants={revealVariant}
-                  className="mt-6 flex flex-col gap-4 sm:flex-row"
+              <motion.div
+                variants={revealVariant}
+                className="mx-auto mt-6 flex max-w-md flex-col gap-4 sm:flex-row"
+              >
+                <a
+                  className="btn-primary flex-1"
+                  href="https://wa.me/261342141031"
+                  target="_blank"
+                  rel="noreferrer"
                 >
-                  <a
-                    className="btn-primary flex-1"
-                    href="https://wa.me/261342141031"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <span className="mr-2">📱</span>
-                    WhatsApp
-                  </a>
-                  <a
-                    className="btn-outline flex-1"
-                    href="tel:+261342141031"
-                  >
-                    <span className="mr-2">📞</span>
-                    Appeler
-                  </a>
-                </motion.div>
-
-                <motion.div 
-                  variants={revealVariant}
-                  className="mt-6 grid gap-4 sm:grid-cols-2"
-                >
-                  <div className="card-surface">
-                    <p className="text-xs uppercase tracking-widest text-slate-400">Capacité</p>
-                    <p className="mt-2 text-lg font-semibold text-[#2B211B]">Jusqu&apos;à 120 pers. (site)</p>
-                  </div>
-                  <div className="card-surface">
-                    <p className="text-xs uppercase tracking-widest text-slate-400">Horaires</p>
-                    <p className="mt-2 text-lg font-semibold text-[#2B211B]">08h - 22h</p>
-                  </div>
-                  <div className="card-surface">
-                    <p className="text-xs uppercase tracking-widest text-slate-400">Paiement</p>
-                    <p className="mt-2 text-lg font-semibold text-[#2B211B]">Espèces / Mobile money</p>
-                  </div>
-                  <div className="card-surface">
-                    <p className="text-xs uppercase tracking-widest text-slate-400">Wifi</p>
-                    <p className="mt-2 text-lg font-semibold text-[#2B211B]">Gratuit haut débit</p>
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  variants={revealVariant}
-                  className="mt-8 overflow-hidden rounded-3xl shadow-soft"
-                >
-                  <div className="map-container h-[300px] w-full">
-                    <iframe
-                      title="Carte Ambohimasina"
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12598.310260508757!2d47.41825023830235!3d-18.94923142070159!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x21fa818b247aa8c3%3A0xc5d001dd1e1ec180!2sAmbohimasina%2C%20Madagascar!5e1!3m2!1sfr!2smu!4v1771236198277!5m2!1sfr!2smu"
-                      className="h-full w-full"
-                      loading="lazy"
-                      allowFullScreen
-                    />
-                  </div>
-                </motion.div>
+                  <span className="mr-2">📱</span>
+                  WhatsApp
+                </a>
+                <a className="btn-outline flex-1" href="tel:+261342141031">
+                  <span className="mr-2">📞</span>
+                  Appeler
+                </a>
               </motion.div>
 
-              <motion.form
-                ref={formRef}
-                className="contact-form relative"
-                name="reservation"
-                method="POST"
-                data-netlify="true"
-                onSubmit={handleSubmit}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={staggerContainer}
+              <motion.div
+                variants={revealVariant}
+                className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
               >
-                <input type="hidden" name="form-name" value="reservation" />
-                
-                <motion.h3 
-                  variants={revealVariant}
-                  className="text-xl font-semibold text-[#2B211B]"
-                >
-                  Formulaire de réservation
-                </motion.h3>
+                <div className="card-surface">
+                  <p className="text-xs uppercase tracking-widest text-slate-400">
+                    Capacité
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-[#2B211B]">
+                    Jusqu&apos;à 120 pers. (site)
+                  </p>
+                </div>
+                <div className="card-surface">
+                  <p className="text-xs uppercase tracking-widest text-slate-400">
+                    Horaires
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-[#2B211B]">
+                    08h - 22h
+                  </p>
+                </div>
+                <div className="card-surface">
+                  <p className="text-xs uppercase tracking-widest text-slate-400">
+                    Paiement
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-[#2B211B]">
+                    Espèces / Mobile money
+                  </p>
+                </div>
+                <div className="card-surface">
+                  <p className="text-xs uppercase tracking-widest text-slate-400">
+                    Wifi
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-[#2B211B]">
+                    Gratuit haut débit
+                  </p>
+                </div>
+              </motion.div>
 
-                <motion.p 
-                  variants={revealVariant}
-                  className="text-sm text-slate-600"
-                >
-                  Réponse garantie sous 24h
-                </motion.p>
-
-                <motion.div variants={revealVariant} className="grid gap-4">
-                  <input
-                    className="input-field"
-                    placeholder="Nom complet *"
-                    name="name"
-                    required
-                    minLength={2}
-                    autoComplete="name"
+              <motion.div
+                variants={revealVariant}
+                className="mt-8 overflow-hidden rounded-3xl shadow-soft"
+              >
+                <div className="map-container h-[300px] w-full">
+                  <iframe
+                    title="Carte Ambohimasina"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12598.310260508757!2d47.41825023830235!3d-18.94923142070159!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x21fa818b247aa8c3%3A0xc5d001dd1e1ec180!2sAmbohimasina%2C%20Madagascar!5e1!3m2!1sfr!2smu!4v1771236198277!5m2!1sfr!2smu"
+                    className="h-full w-full"
+                    loading="lazy"
+                    allowFullScreen
                   />
-                  
-                  <input
-                    className="input-field"
-                    placeholder="Email *"
-                    name="email"
-                    type="email"
-                    required
-                    autoComplete="email"
-                  />
-                  
-                  <input
-                    className="input-field"
-                    placeholder="Téléphone *"
-                    name="phone"
-                    type="tel"
-                    required
-                    pattern="[0-9+\s]{8,}"
-                    autoComplete="tel"
-                  />
-                  
-                  <select
-                    className="input-field"
-                    name="event"
-                    required
-                  >
-                    <option value="">Type d&apos;événement *</option>
-                    <option>Anniversaire</option>
-                    <option>Team building</option>
-                    <option>EVG/EVJF</option>
-                    <option>Soirée à thème</option>
-                    <option>Réunion professionnelle</option>
-                    <option>Mariage</option>
-                    <option>Autre</option>
-                  </select>
-                  
-                  <input
-                    className="input-field"
-                    name="date"
-                    type="date"
-                    required
-                    min={new Date().toISOString().split('T')[0]}
-                    autoComplete="off"
-                  />
-                  
-                  <input
-                    className="input-field"
-                    name="guests"
-                    type="number"
-                    placeholder="Nombre de personnes"
-                    min="1"
-                    max="120"
-                    autoComplete="off"
-                  />
-                  
-                  <textarea
-                    className="input-field min-h-[120px]"
-                    name="message"
-                    placeholder="Détails de votre demande (optionnel)"
-                    maxLength={500}
-                    autoComplete="off"
-                  />
-
-                  {/* Message de statut */}
-                  {formStatus.message && (
-                    <motion.div
-                      className={`rounded-xl p-3 text-sm ${
-                        formStatus.type === 'success'
-                          ? 'bg-[#047857]/10 text-[#047857]'
-                          : formStatus.type === 'error'
-                          ? 'bg-[#C2410C]/10 text-[#C2410C]'
-                          : 'bg-slate-100 text-slate-600'
-                      }`}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                    >
-                      {formStatus.message}
-                    </motion.div>
-                  )}
-
-                  <button
-                    className="btn-primary w-full"
-                    type="submit"
-                    disabled={formStatus.type === 'loading'}
-                  >
-                    {formStatus.type === 'loading' ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        Envoi en cours...
-                      </span>
-                    ) : (
-                      'Envoyer ma demande'
-                    )}
-                  </button>
-                </motion.div>
-
-                {/* Sécurité anti-spam Netlify */}
-                <p className="mt-4 text-center text-xs text-slate-400">
-                  * Champs obligatoires
-                </p>
-              </motion.form>
-            </div>
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
       </main>
@@ -1293,10 +1340,14 @@ function App() {
       <footer className="footer relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 20px 20px, white 2px, transparent 2px)',
-            backgroundSize: '40px 40px'
-          }} />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 20px 20px, white 2px, transparent 2px)",
+              backgroundSize: "40px 40px",
+            }}
+          />
         </div>
 
         <div className="relative mx-auto max-w-7xl">
@@ -1316,7 +1367,7 @@ function App() {
             <div className="mt-6 flex flex-wrap justify-center gap-4">
               <a
                 href="#contact"
-                onClick={(e) => handleAnchorClick(e, '#contact')}
+                onClick={(e) => handleAnchorClick(e, "#contact")}
                 className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-3 font-semibold text-[#C2410C] transition hover:scale-105 hover:shadow-xl"
               >
                 📅 Réserver maintenant
@@ -1339,18 +1390,22 @@ function App() {
               <div className="flex items-center gap-3">
                 <img
                   src={logo}
-                  alt="Ny Tranonay Logo"
+                  alt="Tranonay Logo"
                   className="h-12 w-12 rounded-full object-cover shadow-lg"
                 />
-                <h3 className="text-xl font-bold text-white">Ny Tranonay</h3>
+                <h3 className="text-xl font-bold text-white">Tranonay</h3>
               </div>
               <p className="mt-4 text-sm leading-relaxed text-white/70">
-                L'espace loisir incontournable à Ambohimasina. Location de salle, activités immersives et moments inoubliables à Madagascar.
+                L'espace loisir incontournable à Ambohimasina. Location de
+                salle, activités immersives et moments inoubliables à
+                Madagascar.
               </p>
-              
+
               {/* Social Links */}
               <div className="mt-6">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/50">Suivez-nous</p>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/50">
+                  Suivez-nous
+                </p>
                 <div className="flex gap-3">
                   <motion.a
                     href="https://facebook.com"
@@ -1360,32 +1415,12 @@ function App() {
                     className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white hover:text-[#C2410C]"
                   >
                     <span className="sr-only">Facebook</span>
-                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="h-5 w-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
-                    </svg>
-                  </motion.a>
-                  <motion.a
-                    href="https://instagram.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    whileHover={{ scale: 1.1, y: -2 }}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white hover:text-[#C2410C]"
-                  >
-                    <span className="sr-only">Instagram</span>
-                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                    </svg>
-                  </motion.a>
-                  <motion.a
-                    href="https://tiktok.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    whileHover={{ scale: 1.1, y: -2 }}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white hover:text-[#C2410C]"
-                  >
-                    <span className="sr-only">TikTok</span>
-                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.5a4.83 4.83 0 01-1.04-.1z" />
                     </svg>
                   </motion.a>
                 </div>
@@ -1394,7 +1429,9 @@ function App() {
 
             {/* Navigation Column */}
             <div>
-              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/50">Navigation</h4>
+              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/50">
+                Navigation
+              </h4>
               <ul className="space-y-3 text-sm">
                 {navLinks.map((link) => (
                   <li key={link.href}>
@@ -1403,7 +1440,9 @@ function App() {
                       className="group inline-flex items-center text-white/70 transition hover:text-white"
                       onClick={(e) => handleAnchorClick(e, link.href)}
                     >
-                      <span className="mr-2 transition group-hover:translate-x-1">→</span>
+                      <span className="mr-2 transition group-hover:translate-x-1">
+                        →
+                      </span>
                       {link.label}
                     </a>
                   </li>
@@ -1413,7 +1452,9 @@ function App() {
 
             {/* Contact Column */}
             <div>
-              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/50">Contact</h4>
+              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/50">
+                Contact
+              </h4>
               <ul className="space-y-3 text-sm text-white/70">
                 <li className="flex items-start gap-2">
                   <span className="text-base">📍</span>
@@ -1427,17 +1468,11 @@ function App() {
                   <span className="text-base">📞</span>
                   <div>
                     <div className="font-medium text-white">Téléphone</div>
-                    <a href="tel:+261342141031" className="hover:text-white transition">
+                    <a
+                      href="tel:+261342141031"
+                      className="hover:text-white transition"
+                    >
                       +261 34 21 410 31
-                    </a>
-                  </div>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-base">✉️</span>
-                  <div>
-                    <div className="font-medium text-white">Email</div>
-                    <a href="mailto:contact@nytranonay.mg" className="hover:text-white transition">
-                      contact@nytranonay.mg
                     </a>
                   </div>
                 </li>
@@ -1446,7 +1481,9 @@ function App() {
 
             {/* Hours Column */}
             <div>
-              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/50">Horaires</h4>
+              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/50">
+                Horaires
+              </h4>
               <ul className="space-y-2 text-sm text-white/70">
                 <li className="flex justify-between">
                   <span>Lundi - Vendredi</span>
@@ -1474,18 +1511,28 @@ function App() {
           <div className="mt-12 border-t border-white/10 pt-8">
             <div className="flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
               <p className="text-xs text-white/50">
-                © 2026 Ny Tranonay - Espace Loisir Ambohimasina. Tous droits réservés.
+                © 2026 Tranonay - Espace Loisir Ambohimasina. Tous droits
+                réservés.
               </p>
               <div className="flex flex-wrap justify-center gap-4 text-xs">
-                <a href="#" className="text-white/50 transition hover:text-white">
+                <a
+                  href="#"
+                  className="text-white/50 transition hover:text-white"
+                >
                   Mentions légales
                 </a>
                 <span className="text-white/30">•</span>
-                <a href="#" className="text-white/50 transition hover:text-white">
+                <a
+                  href="#"
+                  className="text-white/50 transition hover:text-white"
+                >
                   Politique de confidentialité
                 </a>
                 <span className="text-white/30">•</span>
-                <a href="#" className="text-white/50 transition hover:text-white">
+                <a
+                  href="#"
+                  className="text-white/50 transition hover:text-white"
+                >
                   CGV
                 </a>
               </div>
@@ -1524,21 +1571,31 @@ function App() {
         {showBackToTop && (
           <motion.button
             type="button"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             className="touch-target fixed bottom-6 left-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#2B211B] text-white shadow-soft transition-shadow hover:shadow-xl"
             aria-label="Retour en haut"
           >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 15l7-7 7 7"
+              />
             </svg>
           </motion.button>
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
