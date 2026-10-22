@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://ny-tranonay.netlify.app/sitemap.xml

@@ -1,26 +1,15 @@
 {
-  "name": "Espace Loisir Ambohimasina",
-  "short_name": "Ny Tranonay",
+  "name": "Tranonay — salle de réception, piscine et chambres",
+  "short_name": "Tranonay",
+  "description": "Salle de réception, privatisation avec piscine et chambres à Ambohimasina, Antananarivo.",
+  "lang": "fr",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFCF8",
   "theme_color": "#C2410C",
   "icons": [
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

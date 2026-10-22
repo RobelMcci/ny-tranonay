@@ -19,7 +19,8 @@ export default {
         "brand-gradient": "linear-gradient(135deg, #C2410C, #047857)",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["Inter Variable", "system-ui", "sans-serif"],
+        display: ["Fraunces Variable", "Georgia", "serif"],
       },
     },
   },
