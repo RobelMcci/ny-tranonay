@@ -1,16 +1,19 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 
-function GalleryLightbox({ image, onClose }) {
+function GalleryLightbox({ images, index, onClose, onNavigate }) {
+  const image = images[index]
+
   useEffect(() => {
     const handleKey = (event) => {
-      if (event.key === 'Escape') {
-        onClose()
-      }
+      if (event.key === 'Escape') onClose()
+      if (event.key === 'ArrowRight') onNavigate(1)
+      if (event.key === 'ArrowLeft') onNavigate(-1)
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [onClose])
+  }, [onClose, onNavigate])
 
   if (!image) return null
 
@@ -33,11 +36,33 @@ function GalleryLightbox({ image, onClose }) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-2 text-sm font-semibold text-slate-700 shadow-lg hover:bg-white"
+          className="absolute right-4 top-4 z-10 rounded-full bg-white/90 p-2 text-slate-700 shadow-lg hover:bg-white"
           aria-label="Fermer la galerie"
         >
-          ✕
+          <X size={18} />
         </button>
+
+        {images.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => onNavigate(-1)}
+              className="absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 text-slate-700 shadow-lg hover:bg-white"
+              aria-label="Image précédente"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate(1)}
+              className="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 text-slate-700 shadow-lg hover:bg-white"
+              aria-label="Image suivante"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </>
+        )}
+
         <img
           src={image.src}
           alt={image.alt}
@@ -53,7 +78,9 @@ function GalleryLightbox({ image, onClose }) {
               </span>
             )}
           </div>
-          <span className="text-xs text-slate-400">Cliquez hors de l'image pour fermer</span>
+          <span className="text-xs text-slate-400">
+            {index + 1} / {images.length}
+          </span>
         </div>
       </motion.div>
     </motion.div>
