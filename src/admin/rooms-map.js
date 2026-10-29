@@ -58,18 +58,19 @@ export function roomToRow(room) {
 export function slugify(name, existingIds) {
   const base =
     String(name ?? '')
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
       .toLowerCase()
+      .replace(/œ/g, 'oe')
+      .replace(/æ/g, 'ae')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, MAX_SLUG)
-      .replace(/-+$/, '') || FALLBACK_SLUG
+      .replace(/^-+|-+$/g, '') || FALLBACK_SLUG
+  const fit = (suffix) => base.slice(0, MAX_SLUG - suffix.length).replace(/-+$/, '') + suffix
   const taken = new Set(existingIds)
-  if (!taken.has(base)) return base
+  if (!taken.has(fit(''))) return fit('')
   let n = 2
-  while (taken.has(`${base}-${n}`)) n += 1
-  return `${base}-${n}`
+  while (taken.has(fit(`-${n}`))) n += 1
+  return fit(`-${n}`)
 }
 
 /**
@@ -136,4 +137,24 @@ export function roomFromForm(form) {
     position: form.position,
     visible: form.visible,
   }
+}
+
+/**
+ * Une chambre du formulaire est « modifiée » si elle est nouvelle, invalide (à corriger)
+ * ou différente de sa version enregistrée (`base`).
+ * @param {{ base: Room | null, form: ReturnType<typeof formFromRoom> }} entry
+ */
+export function isRoomDirty(entry) {
+  const { base, form } = entry
+  if (!base) return true
+  if (Object.keys(validateRoom(form)).length > 0) return true
+  const room = roomFromForm(form)
+  return (
+    room.name !== base.name ||
+    room.price !== base.price ||
+    room.quantity !== base.quantity ||
+    room.visible !== base.visible ||
+    room.features.join('\n') !== base.features.join('\n') ||
+    room.photoKeys.join('\n') !== base.photoKeys.join('\n')
+  )
 }

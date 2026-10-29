@@ -2,10 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { deleteListItem, loadListItems, saveListItem, saveListOrder } from '../api.js'
 import OrderableList from '../components/OrderableList.jsx'
 import { LIST_KEYS, LIST_LABELS } from '../list-keys.js'
+import { withPositions } from '../reorder.js'
 import { useUnsavedWarning } from '../useUnsavedWarning.js'
 
 const focusRing = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C2410C]'
 const MAX_LABEL = 120
+const CONFIRM_DELAY_MS = 400
 
 /** @returns {string | null} Message d'erreur, ou `null` si le texte est valide. */
 function validateLabel(text) {
@@ -73,15 +75,32 @@ function ListItem({ row, index, listLabel, draft, error, busy, confirming, onDra
         </label>
         {confirming ? (
           <span className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={onRemove} disabled={busy} className={`touch-target rounded-full bg-red-800 px-4 text-sm font-semibold text-white hover:bg-red-900 disabled:opacity-60 ${focusRing}`}>
-              Confirmer la suppression<span className="sr-only"> de « {row.label} »</span>
-            </button>
-            <button type="button" onClick={onCancelRemove} disabled={busy} className={`touch-target rounded-full px-3 text-sm font-semibold underline underline-offset-2 ${focusRing}`}>
+            <button
+              type="button"
+              id={`liste-annuler-${row.id}`}
+              onClick={onCancelRemove}
+              disabled={busy}
+              className={`touch-target rounded-full border border-slate-400 bg-white px-4 text-sm font-semibold text-[#2B211B] hover:bg-slate-50 ${focusRing}`}
+            >
               Annuler<span className="sr-only"> la suppression de « {row.label} »</span>
+            </button>
+            <button
+              type="button"
+              onClick={onRemove}
+              disabled={busy}
+              className={`touch-target rounded-full bg-red-800 px-4 text-sm font-semibold text-white hover:bg-red-900 disabled:opacity-60 ${focusRing}`}
+            >
+              Confirmer la suppression<span className="sr-only"> de « {row.label} »</span>
             </button>
           </span>
         ) : (
-          <button type="button" onClick={onAskRemove} disabled={busy} className={`touch-target rounded-full px-3 text-sm font-semibold text-red-800 underline underline-offset-2 disabled:opacity-60 ${focusRing}`}>
+          <button
+            type="button"
+            id={`liste-retirer-${row.id}`}
+            onClick={onAskRemove}
+            disabled={busy}
+            className={`touch-target rounded-full px-3 text-sm font-semibold text-red-800 underline underline-offset-2 disabled:opacity-60 ${focusRing}`}
+          >
             Retirer<span className="sr-only"> « {row.label} » de la liste</span>
           </button>
         )}
@@ -110,6 +129,7 @@ export function Component() {
   const confirmedOrder = useRef({})
   const orderQueue = useRef(Promise.resolve())
   const orderToken = useRef({})
+  const confirmOpenedAt = useRef(0)
 
   useEffect(() => {
     let cancelled = false
@@ -198,7 +218,22 @@ export function Component() {
     }
   }
 
+  // Étape de confirmation : le focus va sur « Annuler » (choix sûr) et la question est annoncée.
+  const askRemove = (row) => {
+    confirmOpenedAt.current = Date.now()
+    setConfirming(row.id)
+    setAnnouncement(`Confirmer la suppression de « ${row.label} » ?`)
+    focusAfterRender(`liste-annuler-${row.id}`)
+  }
+
+  const cancelRemove = (row) => {
+    setConfirming(null)
+    focusAfterRender(`liste-retirer-${row.id}`)
+  }
+
   const removeRow = async (row) => {
+    // Garde contre une double activation (double clic ou double toucher) à l'ouverture de la confirmation.
+    if (Date.now() - confirmOpenedAt.current < CONFIRM_DELAY_MS) return
     setListError(row.list_key, null)
     setBusyFor(row.id, true)
     try {
@@ -243,9 +278,10 @@ export function Component() {
     }
   }
 
-  // Réordonner : affichage immédiat, enregistrement en file ; retour à l'ordre confirmé en cas d'échec.
+  // Réordonner : affichage immédiat, enregistrement en file (une seule instruction SQL atomique par déplacement).
+  // En cas d'échec rien n'a été écrit : on réaffiche l'ordre de la base (ou, à défaut, le dernier ordre confirmé).
   const reorder = (key, next) => {
-    const ordered = next.map((row, position) => ({ ...row, position }))
+    const ordered = withPositions(next)
     const ids = ordered.map((row) => row.id)
     setRows((list) => [...list.filter((row) => row.list_key !== key), ...ordered])
     orderToken.current[key] = (orderToken.current[key] ?? 0) + 1
@@ -257,15 +293,19 @@ export function Component() {
         confirmedOrder.current[key] = ids
       } catch (error) {
         if (token !== orderToken.current[key]) return
-        const rank = new Map((confirmedOrder.current[key] ?? []).map((id, index) => [id, index]))
+        let stored = null
+        try {
+          stored = new Map((await loadListItems()).filter((row) => row.list_key === key).sort(byPosition).map((row, index) => [row.id, index]))
+        } catch {
+          stored = null
+        }
+        const rank = stored ?? new Map((confirmedOrder.current[key] ?? []).map((id, index) => [id, index]))
         setRows((list) => {
-          const rolled = list
-            .filter((row) => row.list_key === key)
-            .sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0))
-            .map((row, position) => ({ ...row, position }))
+          const rolled = withPositions(list.filter((row) => row.list_key === key).sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0)))
+          confirmedOrder.current[key] = rolled.map((row) => row.id)
           return [...list.filter((row) => row.list_key !== key), ...rolled]
         })
-        setListError(key, `${error.message} L’ordre précédent a été rétabli.`)
+        setListError(key, `${error.message} ${stored ? 'L’ordre enregistré est affiché.' : 'L’ordre précédent est conservé : rechargez la page pour vérifier.'}`)
       }
     })
   }
@@ -339,8 +379,8 @@ export function Component() {
                             setItemErrors((e) => ({ ...e, [row.id]: undefined }))
                           }}
                           onToggleVisible={() => toggleVisible(row)}
-                          onAskRemove={() => setConfirming(row.id)}
-                          onCancelRemove={() => setConfirming(null)}
+                          onAskRemove={() => askRemove(row)}
+                          onCancelRemove={() => cancelRemove(row)}
                           onRemove={() => removeRow(row)}
                         />
                       )}

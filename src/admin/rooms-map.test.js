@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import seed from '../data/content.seed.json'
-import { formFromRoom, parseFeatures, roomFromForm, roomFromRow, roomToRow, slugify, validateRoom } from './rooms-map.js'
+import { formFromRoom, isRoomDirty, parseFeatures, roomFromForm, roomFromRow, roomToRow, slugify, validateRoom } from './rooms-map.js'
 
 const valid = () => ({ id: 'double', name: 'Chambre double', price: '45 000', features: 'Lit 2 places\nWifi', photoKeys: [], quantity: '1', position: 0, visible: true })
 
@@ -51,8 +51,40 @@ describe('slugify', () => {
     expect(slug.startsWith('une-chambre-au-nom-vraiment')).toBe(true)
   })
 
-  it('traite les ligatures et caractères non latins comme des séparateurs', () => {
-    expect(slugify('Æ Café 東京', [])).toBe('cafe')
+  it('développe les ligatures et ignore les caractères non latins', () => {
+    expect(slugify('Cœur', [])).toBe('coeur')
+    expect(slugify('Æ Café 東京', [])).toBe('ae-cafe')
+    expect(slugify('ŒUF ÆON', [])).toBe('oeuf-aeon')
+  })
+
+  it('reste à 40 caractères au plus, même avec un suffixe de collision', () => {
+    const long = 'Une chambre au nom vraiment très très long pour tester la limite'
+    const alone = slugify(long, [])
+    expect(alone.length).toBeLessThanOrEqual(40)
+    const collided = slugify(long, [alone])
+    expect(collided.length).toBeLessThanOrEqual(40)
+    expect(collided).not.toBe(alone)
+    expect(collided.endsWith('-2')).toBe(true)
+    expect(collided).not.toMatch(/--/)
+  })
+
+  it('gère des collisions répétées jusqu’à -10 en restant bornée et unique', () => {
+    const long = 'x'.repeat(60)
+    const taken = []
+    for (let i = 0; i < 10; i += 1) {
+      const slug = slugify(long, taken)
+      expect(slug.length).toBeLessThanOrEqual(40)
+      expect(taken).not.toContain(slug)
+      taken.push(slug)
+    }
+    expect(taken[0]).toBe('x'.repeat(40))
+    expect(taken[1]).toBe(`${'x'.repeat(38)}-2`)
+    expect(taken[9]).toBe(`${'x'.repeat(37)}-10`)
+  })
+
+  it('retire le tiret laissé par la troncature avant le suffixe', () => {
+    const base = `${'a'.repeat(37)}-bcd`
+    expect(slugify(base, [base.slice(0, 40)])).toBe(`${'a'.repeat(37)}-2`)
   })
 })
 
@@ -112,5 +144,34 @@ describe('formFromRoom / roomFromForm', () => {
     expect(form.features).toBe('Wifi\nTV')
     expect(form.price).toBe('45 000')
     expect(roomFromForm(form)).toEqual(room)
+  })
+})
+
+describe('isRoomDirty', () => {
+  const base = { id: 'a', name: 'A', price: 45000, features: ['Wifi'], photoKeys: ['k'], quantity: 1, position: 0, visible: true }
+  const entry = (change = {}) => ({ base, form: { ...formFromRoom(base), ...change } })
+
+  it('est faux pour une chambre inchangée (prix reformaté compris)', () => {
+    expect(isRoomDirty(entry())).toBe(false)
+    expect(isRoomDirty(entry({ price: '45000', features: 'Wifi\n\n' }))).toBe(false)
+  })
+
+  it('est vrai pour une chambre nouvelle', () => {
+    expect(isRoomDirty({ base: null, form: formFromRoom(base) })).toBe(true)
+  })
+
+  it('est vrai dès qu’un champ change', () => {
+    for (const change of [{ name: 'B' }, { price: '1' }, { quantity: '2' }, { visible: false }, { features: 'Wifi\nTV' }, { photoKeys: [] }]) {
+      expect(isRoomDirty(entry(change))).toBe(true)
+    }
+  })
+
+  it('est vrai pour une saisie invalide (à corriger)', () => {
+    expect(isRoomDirty(entry({ price: 'abc' }))).toBe(true)
+    expect(isRoomDirty(entry({ name: '' }))).toBe(true)
+  })
+
+  it('ignore la position', () => {
+    expect(isRoomDirty(entry({ position: 7 }))).toBe(false)
   })
 })

@@ -3,7 +3,8 @@ import { loadPhotoChoices, loadRooms, saveRoom, saveRoomOrder } from '../api.js'
 import Field from '../components/Field.jsx'
 import OrderableList from '../components/OrderableList.jsx'
 import SaveBar from '../components/SaveBar.jsx'
-import { formFromRoom, formatPrice, roomFromForm, slugify, validateRoom } from '../rooms-map.js'
+import { formFromRoom, formatPrice, isRoomDirty, roomFromForm, slugify, validateRoom } from '../rooms-map.js'
+import { withPositions } from '../reorder.js'
 import { useUnsavedWarning } from '../useUnsavedWarning.js'
 import { parseAmount } from '../validation.js'
 
@@ -22,26 +23,11 @@ const toEntry = (room) => ({ id: room.id, position: room.position, base: room, f
 
 const errorsOf = (entry) => validateRoom(entry.form)
 
-/** Modifiée : nouvelle, invalide (à corriger) ou différente de la version enregistrée. */
-function isDirty(entry) {
-  if (!entry.base) return true
-  if (Object.keys(errorsOf(entry)).length > 0) return true
-  const room = roomFromForm(entry.form)
-  const { base } = entry
-  return (
-    room.name !== base.name ||
-    room.price !== base.price ||
-    room.quantity !== base.quantity ||
-    room.visible !== base.visible ||
-    room.features.join('\n') !== base.features.join('\n') ||
-    room.photoKeys.join('\n') !== base.photoKeys.join('\n')
-  )
-}
-
 function PhotoChoices({ entry, photos, disabled, onToggle, onRetry }) {
   const selected = entry.form.photoKeys
   const known = new Set(photos.items.map((photo) => photo.key))
-  const missing = selected.filter((key) => !known.has(key))
+  // « Introuvable » seulement une fois le registre chargé : pas de faux signalement pendant le chargement ou en cas d'erreur.
+  const missing = photos.status === 'ready' ? selected.filter((key) => !known.has(key)) : []
   return (
     <fieldset disabled={disabled} className="min-w-0">
       <legend className="field-label">Photos</legend>
@@ -102,7 +88,7 @@ function RoomCard({ entry, open, onToggleOpen, disabled, photos, showErrors, onC
   const panelId = `chambre-${entry.id}-panneau`
   const name = entry.form.name.trim() || 'Nouvelle chambre'
   const price = parseAmount(entry.form.price)
-  const dirty = isDirty(entry)
+  const dirty = isRoomDirty(entry)
 
   return (
     <div>
@@ -236,7 +222,7 @@ export function Component() {
     setPhotoAttempt((n) => n + 1)
   }, [])
 
-  const dirtyEntries = load.status === 'ready' ? entries.filter(isDirty) : []
+  const dirtyEntries = load.status === 'ready' ? entries.filter(isRoomDirty) : []
   const dirty = dirtyEntries.length > 0
   const hasNew = entries.some((entry) => !entry.base)
   useUnsavedWarning(dirty)
@@ -279,24 +265,37 @@ export function Component() {
     setFocusTick((n) => n + 1)
   }
 
-  // Réordonner : affichage immédiat, enregistrement en file ; retour à l'ordre confirmé en cas d'échec.
+  // Réordonner : affichage immédiat, enregistrement en file (une seule requête atomique par déplacement).
+  // En cas d'échec rien n'a été écrit : on réaffiche l'ordre de la base (ou, à défaut, le dernier ordre confirmé).
   const onReorder = (next) => {
-    const ordered = next.map((entry, position) => ({ ...entry, position }))
+    const ordered = withPositions(next)
     setEntries(ordered)
-    const ids = ordered.map((entry) => entry.base.id)
+    const rooms = ordered.map((entry) => ({ ...entry.base, position: entry.position }))
     orderToken.current += 1
     const token = orderToken.current
     setOrder({ status: 'saving', message: 'Enregistrement de l’ordre…' })
     orderQueue.current = orderQueue.current.then(async () => {
       try {
-        await saveRoomOrder(ids)
+        await saveRoomOrder(rooms)
         confirmedOrder.current = ordered.map((entry) => entry.id)
         if (token === orderToken.current) setOrder({ status: 'saved', message: 'Ordre enregistré.' })
       } catch (error) {
         if (token !== orderToken.current) return
-        const rank = new Map(confirmedOrder.current.map((id, index) => [id, index]))
-        setEntries((list) => [...list].sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0)).map((entry, position) => ({ ...entry, position })))
-        setOrder({ status: 'error', message: `${error.message} L’ordre précédent a été rétabli.` })
+        let stored = null
+        try {
+          stored = new Map((await loadRooms()).map((room, index) => [room.id, index]))
+        } catch {
+          stored = null
+        }
+        const confirmed = new Map(confirmedOrder.current.map((id, index) => [id, index]))
+        const rank = (entry) => (stored ? stored.get(entry.base?.id) : confirmed.get(entry.id)) ?? 0
+        const sortedAgain = (list) => withPositions([...list].sort((a, b) => rank(a) - rank(b)))
+        setEntries((list) => {
+          const sorted = sortedAgain(list)
+          confirmedOrder.current = sorted.map((entry) => entry.id)
+          return sorted
+        })
+        setOrder({ status: 'error', message: `${error.message} ${stored ? 'L’ordre enregistré est affiché.' : 'L’ordre précédent est conservé : rechargez la page pour vérifier.'}` })
       }
     })
   }
@@ -322,7 +321,7 @@ export function Component() {
       for (const entry of dirtyEntries) {
         const id = entry.base?.id ?? slugify(entry.form.name, usedIds)
         const room = { ...roomFromForm({ ...entry.form, id }), position: entry.position }
-        await saveRoom(room)
+        await saveRoom(room, { isNew: !entry.base })
         usedIds.push(id)
         setEntries((list) => list.map((candidate) => (candidate.id === entry.id ? { ...candidate, base: room, form: formFromRoom(room) } : candidate)))
         if (!entry.base) confirmedOrder.current = [...confirmedOrder.current, entry.id]

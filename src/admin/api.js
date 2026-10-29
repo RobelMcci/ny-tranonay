@@ -81,7 +81,7 @@ export async function savePrices(changes) {
  * Erreur entièrement en français : l'action échouée, puis une cause compréhensible quand on la connaît
  * (droits, connexion, doublon). Jamais de texte anglais brut de Supabase.
  */
-function failureFr(action, error) {
+export function failureFr(action, error) {
   const message = String(error?.message ?? '')
   let cause = ''
   if (error?.code === '42501' || error?.status === 401 || error?.status === 403 || /row-level security|permission denied|not authorized/i.test(message)) {
@@ -89,7 +89,7 @@ function failureFr(action, error) {
   } else if (/failed to fetch|networkerror|network request failed|load failed/i.test(message)) {
     cause = 'Connexion impossible. Vérifiez votre connexion internet puis réessayez.'
   } else if (error?.code === '23505') {
-    cause = 'Cet identifiant existe déjà.'
+    cause = 'Cet identifiant existe déjà : modifiez le nom.'
   }
   return new Error(cause ? `${action} ${cause}` : action)
 }
@@ -105,25 +105,37 @@ export async function loadRooms() {
 }
 
 /**
- * Crée ou met à jour une chambre (sur son identifiant).
+ * Crée une chambre (`isNew`) ou met à jour une chambre existante.
+ * Création : `insert`, refusée si l'identifiant existe déjà (jamais d'écrasement silencieux).
+ * Modification : `update` sur l'identifiant, sans toucher à `position` (l'ordre n'est changé que par `saveRoomOrder`).
  * @param {import('./rooms-map.js').Room} room
+ * @param {{ isNew?: boolean }} [options]
  */
-export async function saveRoom(room) {
-  const { error } = await getSupabase().from('rooms').upsert(roomToRow(room), { onConflict: 'id' })
-  if (error) throw failureFr(`Impossible d’enregistrer la chambre « ${room.name} ».`, error)
+export async function saveRoom(room, { isNew = false } = {}) {
+  const action = `Impossible d’enregistrer la chambre « ${room.name} ».`
+  const table = getSupabase().from('rooms')
+  const row = roomToRow(room)
+  if (isNew) {
+    const { error } = await table.insert(row)
+    if (error) throw failureFr(action, error)
+    return
+  }
+  const { id, position, ...changes } = row
+  void position
+  const { data, error } = await table.update(changes).eq('id', id).select('id')
+  if (error) throw failureFr(action, error)
+  if (!data?.length) throw new Error(`${action} Chambre introuvable ou vous n’avez pas les droits nécessaires.`)
 }
 
 /**
- * Enregistre l'ordre des chambres : la position de chaque identifiant devient son indice.
- * S'arrête à la première erreur.
- * @param {string[]} ids
+ * Enregistre l'ordre des chambres en UNE requête (upsert de lignes complètes) : tout est enregistré ou rien.
+ * Les chambres reçues sont les versions enregistrées, avec leur nouvelle `position`.
+ * @param {import('./rooms-map.js').Room[]} rooms
  */
-export async function saveRoomOrder(ids) {
-  for (const [position, id] of ids.entries()) {
-    const { data, error } = await getSupabase().from('rooms').update({ position }).eq('id', id).select('id')
-    if (error) throw failureFr('Impossible d’enregistrer l’ordre des chambres.', error)
-    if (!data?.length) throw new Error('Impossible d’enregistrer l’ordre des chambres : une chambre est introuvable ou vous n’avez pas les droits nécessaires.')
-  }
+export async function saveRoomOrder(rooms) {
+  if (rooms.length === 0) return
+  const { error } = await getSupabase().from('rooms').upsert(rooms.map(roomToRow), { onConflict: 'id' })
+  if (error) throw failureFr('Impossible d’enregistrer l’ordre des chambres.', error)
 }
 
 /**
@@ -180,14 +192,15 @@ export async function deleteListItem(id) {
 }
 
 /**
- * Enregistre l'ordre d'une liste : la position de chaque identifiant devient son indice.
- * S'arrête à la première erreur.
- * @param {(number | string)[]} ids
+ * Enregistre l'ordre d'une liste en UNE instruction SQL (fonction `reorder_list_items`) : tout ou rien.
+ * La position de chaque identifiant devient son indice.
+ * @param {number[]} ids
  */
 export async function saveListOrder(ids) {
-  for (const [position, id] of ids.entries()) {
-    const { data, error } = await getSupabase().from('list_items').update({ position }).eq('id', id).select('id')
-    if (error) throw failureFr('Impossible d’enregistrer l’ordre de la liste.', error)
-    if (!data?.length) throw new Error('Impossible d’enregistrer l’ordre de la liste : un élément est introuvable ou vous n’avez pas les droits nécessaires.')
+  if (ids.length === 0) return
+  const { error } = await getSupabase().rpc('reorder_list_items', { ids })
+  if (error?.code === 'P0002') {
+    throw new Error('Impossible d’enregistrer l’ordre de la liste : un élément est introuvable ou vous n’avez pas les droits nécessaires.')
   }
+  if (error) throw failureFr('Impossible d’enregistrer l’ordre de la liste.', error)
 }
