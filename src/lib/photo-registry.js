@@ -27,6 +27,32 @@ export function buildRegistry(rows, { srcsets, fallbacks }) {
   return registry
 }
 
+const byPositionThenKey = (a, b) => {
+  const pa = a.galleryPosition ?? Infinity
+  const pb = b.galleryPosition ?? Infinity
+  if (pa !== pb) return pa < pb ? -1 : 1
+  return a.key < b.key ? -1 : a.key > b.key ? 1 : 0
+}
+
+/**
+ * Clés de la galerie : photos du registre ayant une position, triées par position puis par clé
+ * (indépendant de l'ordre des lignes renvoyé par la base).
+ */
+export function galleryKeysOf(rows, registry) {
+  return (rows ?? [])
+    .filter((row) => row.galleryPosition != null && has(registry, row.key))
+    .sort(byPositionThenKey)
+    .map((row) => row.key)
+}
+
+/** Clés des chambres : catégorie `Chambres`, triées par position (sans position en dernier) puis par clé. */
+export function roomPhotoKeysOf(rows, registry) {
+  return (rows ?? [])
+    .filter((row) => row.category === 'Chambres' && has(registry, row.key))
+    .sort(byPositionThenKey)
+    .map((row) => row.key)
+}
+
 /**
  * Résout un emplacement (clé de `defaults`) ou une clé de photo directe.
  * Emplacement : surcharge, sinon photo par défaut. Photo absente du registre : photo par défaut

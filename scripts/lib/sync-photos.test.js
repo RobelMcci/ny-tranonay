@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer'
 import { describe, expect, it, vi } from 'vitest'
+import seed from '../../src/data/content.seed.json'
 import { syncPhotos } from './sync-photos.mjs'
 
 const photo = (key, extra = {}) => ({
@@ -87,5 +88,32 @@ describe('syncPhotos', () => {
     expect(fetchImpl).not.toHaveBeenCalled()
     expect(log).not.toHaveBeenCalled()
     expect(result).toEqual(content)
+  })
+
+  it.each(['../evil', '../../x', 'a/b', 'a\\b', '..', 'a.b', 'a b', ''])('refuse la clé %j : aucun accès réseau ni fichier, photo retirée avec avertissement', async (key) => {
+    const fetchImpl = vi.fn(async () => okResponse([1]))
+    const writeFile = vi.fn()
+    const log = vi.fn()
+    const result = await syncPhotos({ photos: [photo(key)] }, { fetchImpl, env, dir: '/out/cms', writeFile, log })
+    expect(fetchImpl).not.toHaveBeenCalled()
+    expect(writeFile).not.toHaveBeenCalled()
+    expect(result.photos).toEqual([])
+    expect(log).toHaveBeenCalledTimes(1)
+    expect(log.mock.calls[0][0]).toContain(`« ${key} »`)
+  })
+
+  it('cas mixte : garde la bonne photo, retire la mauvaise, un seul avertissement', async () => {
+    const fetchImpl = vi.fn(async () => okResponse([9]))
+    const writeFile = vi.fn(async () => {})
+    const log = vi.fn()
+    const result = await syncPhotos({ photos: [photo('../evil'), photo('bonne')] }, { fetchImpl, env, dir: '/out/cms', writeFile, log })
+    expect(result.photos.map((p) => [p.key, p.file])).toEqual([['bonne', 'cms/bonne']])
+    expect(writeFile).toHaveBeenCalledTimes(1)
+    expect(writeFile.mock.calls[0][0]).toBe('/out/cms/bonne.jpg')
+    expect(log).toHaveBeenCalledTimes(1)
+  })
+
+  it('toutes les clés du seed sont des noms de fichier valides', () => {
+    for (const { key } of seed.photos) expect(key, key).toMatch(/^[A-Za-z0-9_-]+$/)
   })
 })

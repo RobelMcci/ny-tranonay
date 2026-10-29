@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { buildRegistry, resolvePhoto } from './photo-registry.js'
+import seed from '../data/content.seed.json'
+import { buildRegistry, galleryKeysOf, resolvePhoto, roomPhotoKeysOf } from './photo-registry.js'
 
 const rows = [
   { key: 'facadeJour', file: 'image36', storagePath: null, alt: 'Façade', category: 'Espace', width: 2048, height: 1536, galleryPosition: 0 },
@@ -87,5 +88,41 @@ describe('resolvePhoto', () => {
 
   it('tolère des surcharges et défauts absents', () => {
     expect(resolvePhoto('piscine', registry)).toBe(registry.piscine)
+  })
+})
+
+describe('galleryKeysOf et roomPhotoKeysOf', () => {
+  const all = Object.fromEntries(seed.photos.map((row) => [row.key, {}]))
+
+  it('ordonne les chambres du seed par rang de galerie', () => {
+    expect(roomPhotoKeysOf(seed.photos, all)).toEqual([
+      'chambreTwin', 'chambreVerte', 'chambreRose', 'chambreViolette', 'chambreOrange', 'chambreTV',
+    ])
+  })
+
+  it('ordonne la galerie du seed par rang', () => {
+    const expected = [...seed.photos].filter((p) => p.galleryPosition != null).sort((a, b) => a.galleryPosition - b.galleryPosition).map((p) => p.key)
+    expect(galleryKeysOf(seed.photos, all)).toEqual(expected)
+    expect(galleryKeysOf(seed.photos, all)).toHaveLength(32)
+  })
+
+  it('ne dépend pas de l’ordre des lignes (ordre alphabétique de la base)', () => {
+    const alphabetical = [...seed.photos].sort((a, b) => (a.key < b.key ? -1 : 1))
+    expect(roomPhotoKeysOf(alphabetical, all)).toEqual(roomPhotoKeysOf(seed.photos, all))
+    expect(galleryKeysOf(alphabetical, all)).toEqual(galleryKeysOf(seed.photos, all))
+  })
+
+  it('départage par clé, place les chambres sans rang en dernier, ignore les photos hors registre', () => {
+    const rows = [
+      { key: 'b', category: 'Chambres', galleryPosition: 1 },
+      { key: 'a', category: 'Chambres', galleryPosition: 1 },
+      { key: 'z', category: 'Chambres', galleryPosition: null },
+      { key: 'c', category: 'Chambres', galleryPosition: 0 },
+      { key: 'ghost', category: 'Chambres', galleryPosition: 0 },
+      { key: 'x', category: 'Espace', galleryPosition: 2 },
+    ]
+    const registry = { a: {}, b: {}, c: {}, z: {}, x: {} }
+    expect(roomPhotoKeysOf(rows, registry)).toEqual(['c', 'a', 'b', 'z'])
+    expect(galleryKeysOf(rows, registry)).toEqual(['c', 'a', 'b', 'x'])
   })
 })

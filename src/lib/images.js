@@ -3,7 +3,7 @@
 // et de src/assets/cms/ (photos téléversées, téléchargées par scripts/fetch-content.mjs) sont traitées.
 import { photos as photoRows, photoSlots as photoSlotOverrides } from '../data/site.js'
 import { photoSlots as photoSlotDefinitions } from '../data/photo-slots.js'
-import { buildRegistry, resolvePhoto } from './photo-registry.js'
+import { buildRegistry, galleryKeysOf, resolvePhoto, roomPhotoKeysOf } from './photo-registry.js'
 
 const srcsets = import.meta.glob('../assets/{image*.jpg,cms/*.jpg}', {
   query: { w: '480;800;1200;1600', format: 'webp', quality: 70, as: 'srcset' },
@@ -21,14 +21,11 @@ export const photos = buildRegistry(photoRows, { srcsets, fallbacks })
 
 const slotDefaults = Object.fromEntries(photoSlotDefinitions.map((slot) => [slot.key, slot.default]))
 
-/** Photos de la galerie, dans l'ordre de `galleryPosition`. */
-export const galleryKeys = photoRows
-  .filter((row) => row.galleryPosition != null && photos[row.key])
-  .sort((a, b) => a.galleryPosition - b.galleryPosition)
-  .map((row) => row.key)
+/** Photos de la galerie, dans l'ordre de `galleryPosition` (puis de la clé). */
+export const galleryKeys = galleryKeysOf(photoRows, photos)
 
-/** Photos de la catégorie Chambres, dans l'ordre du contenu. */
-export const roomPhotoKeys = photoRows.filter((row) => row.category === 'Chambres' && photos[row.key]).map((row) => row.key)
+/** Photos de la catégorie Chambres, par `galleryPosition` (sans position en dernier) puis clé. */
+export const roomPhotoKeys = roomPhotoKeysOf(photoRows, photos)
 
 /** Résout un emplacement (ex. `hero.1`) ou une clé de photo ; ne lève jamais, `undefined` si aucune photo. */
 export const photo = (nameOrSlot) => resolvePhoto(nameOrSlot, photos, photoSlotOverrides, slotDefaults)

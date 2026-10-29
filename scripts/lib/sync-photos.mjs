@@ -3,6 +3,8 @@
 import { Buffer } from 'node:buffer'
 
 const TIMEOUT_MS = 20000
+// La clé sert de nom de fichier : pas de séparateur ni de `..` possibles.
+const SAFE_KEY = /^[A-Za-z0-9_-]+$/
 
 /**
  * @param {{ photos: Array<object> }} content
@@ -31,6 +33,10 @@ export async function syncPhotos(content, { fetchImpl, env, dir, writeFile, log 
   for (const photo of content.photos ?? []) {
     if (photo.file || !photo.storagePath) {
       photos.push(photo)
+      continue
+    }
+    if (typeof photo.key !== 'string' || !SAFE_KEY.test(photo.key)) {
+      log(`photo « ${photo.key} » retirée : clé invalide pour un nom de fichier (lettres, chiffres, _ et - uniquement)`)
       continue
     }
     try {
