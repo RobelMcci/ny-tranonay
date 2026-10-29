@@ -1,14 +1,16 @@
 // Écrit src/data/content.snapshot.json : contenu publié (Supabase) ou, à défaut, seed commité.
 // Usage : node scripts/fetch-content.mjs [--seed]   (--seed : seed sans réseau, utilisé par `pretest`)
 // Ne fait jamais échouer le build : toute erreur de chargement se replie sur le seed.
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { loadContent } from './lib/content-loader.mjs'
+import { syncPhotos } from './lib/sync-photos.mjs'
 
 const root = new URL('../', import.meta.url)
 const seedPath = fileURLToPath(new URL('src/data/content.seed.json', root))
 const snapshotPath = fileURLToPath(new URL('src/data/content.snapshot.json', root))
 const envLocalPath = fileURLToPath(new URL('.env.local', root))
+const cmsDir = fileURLToPath(new URL('src/assets/cms', root))
 
 // Mini-parseur .env.local (KEY=VALUE, commentaires #, guillemets optionnels) ; n'écrase pas l'environnement.
 function loadEnvLocal(env) {
@@ -39,6 +41,23 @@ if (useSeedOnly) {
     result = await loadContent({ env, fetchImpl: fetch, readSeed, log: console.warn })
   } catch (error) {
     console.warn(`contenu : erreur inattendue (${error?.message ?? error}), repli sur le seed`)
+    result = { content: readSeed(), source: 'seed' }
+  }
+  // Télécharge les photos téléversées (Storage) dans src/assets/cms ; celles qui échouent sont retirées du contenu.
+  try {
+    if (result.content.photos?.some((photo) => !photo.file && photo.storagePath)) mkdirSync(cmsDir, { recursive: true })
+    result = {
+      ...result,
+      content: await syncPhotos(result.content, {
+        fetchImpl: fetch,
+        env,
+        dir: cmsDir,
+        writeFile: (path, data) => writeFileSync(path, data),
+        log: console.warn,
+      }),
+    }
+  } catch (error) {
+    console.warn(`photos : erreur inattendue (${error?.message ?? error}), repli sur le seed`)
     result = { content: readSeed(), source: 'seed' }
   }
 }

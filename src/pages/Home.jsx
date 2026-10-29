@@ -30,21 +30,21 @@ const roomRange = roomPriceRange(rooms)
 const offers = [
   {
     to: '/salle-reception-evenements',
-    photo: 'salleLongue',
+    slot: 'accueil.offre.salle',
     title: 'Salle de réception',
     text: 'Salle dinatoire équipée, couverts, nappes, housses de chaise, décoration florale et sono : tout est prêt.',
     price: `${formatAr(prices.reception.perDay)} / jour`,
   },
   {
     to: '/privatisation-piscine',
-    photo: 'facadeJour',
+    slot: 'accueil.offre.privatisation',
     title: 'Privatisation & piscine',
     text: 'Piscine, cinéma en plein air, karaoké, baby-foot, jeux vidéo et simulateur de course rien que pour votre groupe.',
     price: `${formatAr(prices.privatisation.jour)} / journée ou nuitée`,
   },
   {
     to: '/chambres',
-    photo: 'chambreTwin',
+    slot: 'accueil.offre.chambres',
     title: 'Chambres sur place',
     text: 'Chambres climatisées avec eau chaude, wifi et terrasse privée pour prolonger la fête.',
     price: roomRange ? `dès ${formatAr(roomRange.min)} / nuit` : null,
@@ -100,7 +100,7 @@ export function Component() {
               <Tilt className="h-full">
                 <Link to={o.to} className="group block h-full overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-black/5 transition-shadow hover:shadow-2xl">
                   <div className="aspect-[4/3] overflow-hidden">
-                    <Photo name={o.photo} sizes="(min-width: 768px) 33vw, 100vw" className="h-full w-full object-cover transition duration-700 group-hover:scale-110" />
+                    <Photo name={o.slot} sizes="(min-width: 768px) 33vw, 100vw" className="h-full w-full object-cover transition duration-700 group-hover:scale-110" />
                   </div>
                   <div className="p-6">
                     <h3>{o.title}</h3>

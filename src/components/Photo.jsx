@@ -1,8 +1,10 @@
-import { photos } from '../lib/images.js'
+import { photo as resolvePhoto } from '../lib/images.js'
 
-/** Image responsive WebP avec dimensions réservées (pas de décalage de mise en page). */
+/** Image responsive WebP avec dimensions réservées (pas de décalage de mise en page).
+ *  `name` : emplacement (`hero.1`) ou clé de photo. Rien n'est rendu si aucune photo n'existe. */
 export default function Photo({ name, sizes = '(min-width: 1024px) 33vw, 100vw', priority = false, className = '', alt }) {
-  const photo = photos[name]
+  const photo = resolvePhoto(name)
+  if (!photo) return null
   return (
     <img
       src={photo.src}

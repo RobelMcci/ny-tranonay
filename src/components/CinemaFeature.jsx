@@ -40,9 +40,9 @@ export default function CinemaFeature() {
         </Reveal>
 
         <Reveal delay={0.1} className="relative mx-auto w-full max-w-lg lg:max-w-none">
-          <ParallaxPhoto name="cinemaPiscine" sizes="(min-width: 1024px) 40vw, 90vw" className="aspect-[4/3] rounded-3xl shadow-2xl ring-1 ring-white/15" />
+          <ParallaxPhoto name="cinema.1" sizes="(min-width: 1024px) 40vw, 90vw" className="aspect-[4/3] rounded-3xl shadow-2xl ring-1 ring-white/15" />
           <div className="float-slow absolute -bottom-8 -left-4 w-[46%] overflow-hidden rounded-2xl shadow-2xl ring-4 ring-[#0B1026] [--r:-3deg] sm:-left-8">
-            <ParallaxPhoto name="cinema" sizes="25vw" strength={14} className="aspect-[4/3]" />
+            <ParallaxPhoto name="cinema.2" sizes="25vw" strength={14} className="aspect-[4/3]" />
           </div>
         </Reveal>
       </div>

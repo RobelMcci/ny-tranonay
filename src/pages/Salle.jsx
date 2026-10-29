@@ -80,8 +80,8 @@ export function Component() {
             La nourriture de l’extérieur est autorisée, les boissons sont servies sur place. Vous préférez ne pas vous en occuper ? Une restauration sur commande est possible : plat du jour à {formatAr(prices.meals.platDuJour)} ou plat complet (entrée, plat, dessert) à {formatAr(prices.meals.platComplet)}.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <Photo name="buffetCitron" sizes="(min-width: 1024px) 20vw, 45vw" className="aspect-[3/4] w-full rounded-2xl object-cover" />
-            <Photo name="buffetDesserts" sizes="(min-width: 1024px) 20vw, 45vw" className="aspect-[3/4] w-full rounded-2xl object-cover" />
+            <Photo name="salle.1" sizes="(min-width: 1024px) 20vw, 45vw" className="aspect-[3/4] w-full rounded-2xl object-cover" />
+            <Photo name="salle.2" sizes="(min-width: 1024px) 20vw, 45vw" className="aspect-[3/4] w-full rounded-2xl object-cover" />
           </div>
         </Reveal>
       </section>

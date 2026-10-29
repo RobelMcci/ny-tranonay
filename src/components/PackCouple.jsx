@@ -36,10 +36,10 @@ export default function PackCouple() {
 
           <div className="relative mx-auto h-72 w-full max-w-md sm:h-96" aria-hidden="true">
             <div className="float-slow absolute left-0 top-0 w-[58%] overflow-hidden rounded-3xl shadow-2xl ring-4 ring-white/80 [--r:-4deg]">
-              <Photo name="chambreOrange" sizes="30vw" alt="" className="aspect-[4/5] w-full object-cover" />
+              <Photo name="couple.1" sizes="30vw" alt="" className="aspect-[4/5] w-full object-cover" />
             </div>
             <div className="float-slow absolute bottom-0 right-0 w-[58%] overflow-hidden rounded-3xl shadow-2xl ring-4 ring-white/80 [--r:3deg]" style={{ animationDelay: '-2.5s' }}>
-              <Photo name="packRepas" sizes="30vw" alt="" className="aspect-square w-full object-cover" />
+              <Photo name="couple.2" sizes="30vw" alt="" className="aspect-square w-full object-cover" />
             </div>
           </div>
         </div>

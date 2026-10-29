@@ -3,9 +3,9 @@ import Photo from './Photo.jsx'
 import WaveDivider from './WaveDivider.jsx'
 
 const slides = [
-  { photo: 'facadeJour', caption: 'Le jour · piscine et jardin' },
-  { photo: 'piscine', caption: 'Au crépuscule · la piscine s’illumine' },
-  { photo: 'cinema', caption: 'La nuit · cinéma en plein air' },
+  { slot: 'hero.1', caption: 'Le jour · piscine et jardin' },
+  { slot: 'hero.2', caption: 'Au crépuscule · la piscine s’illumine' },
+  { slot: 'hero.3', caption: 'La nuit · cinéma en plein air' },
 ]
 const DELAY = 6500
 
@@ -44,11 +44,11 @@ export default function HeroSlider({ children }) {
         if (i > 0 && !ready) return null
         return (
           <div
-            key={slide.photo}
+            key={slide.slot}
             aria-hidden="true"
             className={`absolute inset-0 -z-20 transition-opacity duration-[1600ms] ease-in-out ${i === index ? 'opacity-100' : 'opacity-0'}`}
           >
-            <Photo name={slide.photo} priority={i === 0} sizes="100vw" alt="" className="kenburns h-full w-full object-cover" />
+            <Photo name={slide.slot} priority={i === 0} sizes="100vw" alt="" className="kenburns h-full w-full object-cover" />
           </div>
         )
       })}
@@ -62,7 +62,7 @@ export default function HeroSlider({ children }) {
         <span className="flex gap-1.5">
           {slides.map((s, i) => (
             <button
-              key={s.photo}
+              key={s.slot}
               type="button"
               tabIndex={-1}
               onClick={() => setIndex(i)}

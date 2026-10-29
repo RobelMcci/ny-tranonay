@@ -59,7 +59,7 @@ export function Component() {
         <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {rooms.map((room, i) => (
             <Reveal as="li" key={room.id} delay={i * 0.06} className="card-surface flex flex-col">
-              {room.id === 'twin' && <Photo name="chambreTwin" sizes="(min-width: 1024px) 25vw, 50vw" className="-mx-6 -mt-6 mb-4 aspect-[4/3] w-[calc(100%+3rem)] max-w-none rounded-t-3xl object-cover" />}
+              {room.id === 'twin' && <Photo name="chambres.1" sizes="(min-width: 1024px) 25vw, 50vw" className="-mx-6 -mt-6 mb-4 aspect-[4/3] w-[calc(100%+3rem)] max-w-none rounded-t-3xl object-cover" />}
               <h3>{room.name}</h3>
               <p className="mt-3">
                 <span className="font-display text-3xl font-semibold text-[#C2410C]">{formatAr(room.price)}</span>
@@ -78,8 +78,8 @@ export function Component() {
       <section className="bg-[#FDF6EC]">
         <div className="section grid gap-8 lg:grid-cols-2 lg:items-center">
           <Reveal className="grid grid-cols-2 gap-3">
-            <Photo name="facadeJour" sizes="(min-width: 1024px) 25vw, 50vw" className="aspect-[3/4] w-full rounded-3xl object-cover" />
-            <Photo name="escalier" sizes="(min-width: 1024px) 25vw, 50vw" className="aspect-[3/4] w-full rounded-3xl object-cover" />
+            <Photo name="chambres.2" sizes="(min-width: 1024px) 25vw, 50vw" className="aspect-[3/4] w-full rounded-3xl object-cover" />
+            <Photo name="chambres.3" sizes="(min-width: 1024px) 25vw, 50vw" className="aspect-[3/4] w-full rounded-3xl object-cover" />
           </Reveal>
           <Reveal delay={0.1}>
             <p className="eyebrow">Dormir sereinement</p>
