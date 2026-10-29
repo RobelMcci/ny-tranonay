@@ -14,6 +14,7 @@
     "test": "vitest run",
     "og": "node scripts/make-og.mjs",
     "icons": "node scripts/make-icons.mjs",
+    "seed:db": "node scripts/seed-db.mjs",
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db"
