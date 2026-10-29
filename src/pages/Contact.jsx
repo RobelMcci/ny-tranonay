@@ -1,4 +1,4 @@
-import { business, hours, mapsDirectionsUrl, mapsEmbedUrl, whatsappLink } from '../data/site.js'
+import { business, hours, mapsDirectionsUrl, mapsEmbedUrl, text, whatsappLink } from '../data/site.js'
 import { businessSchema } from '../lib/schema.js'
 import ContactForm from '../components/ContactForm.jsx'
 import { FacebookIcon, MailIcon, MessengerIcon, PhoneIcon, PinIcon, WhatsappIcon } from '../components/Icons.jsx'
@@ -17,8 +17,8 @@ export function Component() {
       <PageHero
         photo="facadeJour"
         eyebrow="Contact & accès"
-        title="Contacter Tranonay, à Ambohimasina"
-        lead="Un renseignement, une date à bloquer, une visite ? Écrivez-nous là où vous êtes le plus à l’aise."
+        title={text('contact.hero.titre')}
+        lead={text('contact.hero.intro')}
       />
 
       <section className="section grid gap-10 lg:grid-cols-2">

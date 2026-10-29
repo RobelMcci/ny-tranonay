@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { roomHours, rooms } from '../data/site.js'
+import { roomHours, rooms, text } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
 import { roomPriceRange } from '../lib/rooms.js'
 import { serviceSchema } from '../lib/schema.js'
@@ -38,7 +38,7 @@ export function Component() {
       <PageHero
         photo="chambreTwin"
         eyebrow="Chambres"
-        title="Chambres climatisées à Ambohimasina, route du CUR Vontovorona"
+        title={text('chambres.hero.titre')}
         lead={`Terminez la soirée sur place : chambres avec climatisation, eau chaude, wifi et terrasse privée. Check-in à partir de ${roomHours.checkIn}, check-out à ${roomHours.checkOut}.`}
       >
         <Link to="/tarifs-devis#simulateur" className="btn-primary">Réserver une chambre</Link>

@@ -3,6 +3,7 @@
 // Ce fichier ne doit importer aucun asset : il est aussi lu par vite.config.js (sitemap, robots, llms.txt).
 import snapshot from './content.snapshot.json'
 import { buildSite } from './build-site.js'
+import { getText } from './text-slots.js'
 
 // À changer le jour où le nom de domaine est acheté (une seule ligne).
 export const SITE_URL = 'https://ny-tranonay.netlify.app'
@@ -29,6 +30,9 @@ export const pages = site.pages
 export const photos = site.photos
 export const photoSlots = site.photoSlots
 export const texts = site.texts
+
+/** Texte modifiable d'un emplacement déclaré dans text-slots.js (surcharge publiée, sinon texte par défaut). */
+export const text = (key) => getText(key, texts)
 
 const coords = `${business.geo.latitude},${business.geo.longitude}`
 export const mapsEmbedUrl = `https://www.google.com/maps?q=${coords}&z=17&output=embed`

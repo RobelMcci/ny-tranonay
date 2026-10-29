@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { eventTypes, prices, receptionIncludes } from '../data/site.js'
+import { eventTypes, prices, receptionIncludes, text } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
 import { serviceSchema } from '../lib/schema.js'
 import CtaBand from '../components/CtaBand.jsx'
@@ -26,7 +26,7 @@ export function Component() {
       <PageHero
         photo="salleLongue"
         eyebrow="Salle & réceptions"
-        title="Location de salle de réception à Antananarivo"
+        title={text('salle.hero.titre')}
         lead={`Une grande salle lumineuse, déjà dressée : nappes, housses de chaise, décoration florale et sonorisation. Jusqu’à ${prices.reception.maxGuests} personnes, de 8h30 à 18h.`}
       >
         <Link to="/tarifs-devis#simulateur" className="btn-primary">Obtenir un devis</Link>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { activitiesList, business, prices, rooms, whatsappLink } from '../data/site.js'
+import { activitiesList, business, prices, rooms, text, whatsappLink } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
 import { roomPriceRange } from '../lib/rooms.js'
 import { businessSchema, faqSchema, websiteSchema } from '../lib/schema.js'
@@ -23,7 +23,7 @@ import Seo from '../components/Seo.jsx'
 import StatsBand from '../components/StatsBand.jsx'
 import Tilt from '../components/Tilt.jsx'
 
-const headline = 'Salle de réception, piscine et chambres à Antananarivo'.split(' ')
+const headline = text('accueil.hero.titre').split(' ')
 
 const roomRange = roomPriceRange(rooms)
 
@@ -31,22 +31,22 @@ const offers = [
   {
     to: '/salle-reception-evenements',
     slot: 'accueil.offre.salle',
-    title: 'Salle de réception',
-    text: 'Salle dinatoire équipée, couverts, nappes, housses de chaise, décoration florale et sono : tout est prêt.',
+    title: text('accueil.offre.salle.titre'),
+    text: text('accueil.offre.salle.texte'),
     price: `${formatAr(prices.reception.perDay)} / jour`,
   },
   {
     to: '/privatisation-piscine',
     slot: 'accueil.offre.privatisation',
-    title: 'Privatisation & piscine',
-    text: 'Piscine, cinéma en plein air, karaoké, baby-foot, jeux vidéo et simulateur de course rien que pour votre groupe.',
+    title: text('accueil.offre.privatisation.titre'),
+    text: text('accueil.offre.privatisation.texte'),
     price: `${formatAr(prices.privatisation.jour)} / journée ou nuitée`,
   },
   {
     to: '/chambres',
     slot: 'accueil.offre.chambres',
-    title: 'Chambres sur place',
-    text: 'Chambres climatisées avec eau chaude, wifi et terrasse privée pour prolonger la fête.',
+    title: text('accueil.offre.chambres.titre'),
+    text: text('accueil.offre.chambres.texte'),
     price: roomRange ? `dès ${formatAr(roomRange.min)} / nuit` : null,
   },
 ]
@@ -59,7 +59,7 @@ export function Component() {
       <HeroSlider>
         <OpenStatus tone="light" className="anim-rise" />
         <p className="anim-rise mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-[#FDBA74]" style={{ animationDelay: '0.04s' }}>
-          Ambohimasina · route du CUR Vontovorona · Antananarivo
+          {text('accueil.hero.eyebrow')}
         </p>
         <h1 className="mt-4 max-w-4xl text-white">
           {headline.map((word, i) => (
@@ -69,7 +69,7 @@ export function Component() {
           ))}
         </h1>
         <p className="anim-rise mt-6 max-w-2xl text-base leading-relaxed text-white/90 sm:text-xl" style={{ animationDelay: '0.35s' }}>
-          Anniversaires, réceptions et soirées : une grande salle dressée, une piscine privatisable, un cinéma en plein air et des chambres climatisées, sur un site surveillé.
+          {text('accueil.hero.sous-titre')}
         </p>
         <div className="anim-rise mt-8 flex flex-wrap gap-3" style={{ animationDelay: '0.45s' }}>
           <Link to="/tarifs-devis#simulateur" className="btn-primary">Estimer mon événement</Link>
