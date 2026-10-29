@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { roomHours, rooms } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
+import { roomPriceRange } from '../lib/rooms.js'
 import { serviceSchema } from '../lib/schema.js'
 import CtaBand from '../components/CtaBand.jsx'
 import { ShieldIcon } from '../components/Icons.jsx'
@@ -11,9 +12,9 @@ import Reveal from '../components/Reveal.jsx'
 import RoomCarousel from '../components/RoomCarousel.jsx'
 import Seo from '../components/Seo.jsx'
 
-const roomPrices = rooms.map((r) => r.price)
-const roomsHeading = roomPrices.length
-  ? `Quatre types de chambre, de ${Math.min(...roomPrices).toLocaleString('fr-FR').replace(/\s/g, ' ')} à ${formatAr(Math.max(...roomPrices))} la nuit`
+const roomRange = roomPriceRange(rooms)
+const roomsHeading = roomRange
+  ? `Quatre types de chambre, de ${roomRange.min.toLocaleString('fr-FR').replace(/\s/g, ' ')} à ${formatAr(roomRange.max)} la nuit`
   : 'Nos chambres'
 
 export function Component() {
@@ -21,13 +22,17 @@ export function Component() {
     <>
       <Seo
         path="/chambres"
-        nodes={[
-          serviceSchema(
-            'Chambres climatisées à Ambohimasina',
-            'Chambres avec climatisation, eau chaude, wifi et terrasse privée.',
-            Math.min(...rooms.map((r) => r.price)),
-          ),
-        ]}
+        nodes={
+          roomRange
+            ? [
+                serviceSchema(
+                  'Chambres climatisées à Ambohimasina',
+                  'Chambres avec climatisation, eau chaude, wifi et terrasse privée.',
+                  roomRange.min,
+                ),
+              ]
+            : []
+        }
       />
 
       <PageHero

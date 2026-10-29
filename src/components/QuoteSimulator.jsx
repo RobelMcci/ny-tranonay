@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { business, eventTypes, prices, rooms, whatsappLink } from '../data/site.js'
+import { roomPriceRange } from '../lib/rooms.js'
 import { buildQuote, emptyQuoteInput, formatAr, quoteToMessage } from '../lib/quote.js'
 import { MessengerIcon, MoonIcon, SunIcon, WhatsappIcon } from './Icons.jsx'
 import InvitationCard from './InvitationCard.jsx'
@@ -31,11 +32,13 @@ function Stepper({ id, label, value, onChange, min = 0, max = 99, hint }) {
   )
 }
 
+const roomRange = roomPriceRange(rooms)
+
 const formulas = [
   { id: 'privatisation', title: 'Privatisation', desc: 'Piscine, salle, karaoké et jeux rien que pour vous', price: `${formatAr(prices.privatisation.jour)} / créneau` },
   { id: 'reception', title: 'Réception', desc: `Salle dinatoire équipée, jusqu’à ${prices.reception.maxGuests} personnes`, price: `${formatAr(prices.reception.perDay)} / jour` },
   { id: 'couple', title: 'Pack couple', desc: 'Nuitée, repas et petit-déjeuner offert', price: `${formatAr(prices.couple)} / pack` },
-  { id: 'sejour', title: 'Chambres seules', desc: 'Passer la nuit sur place', price: `dès ${formatAr(Math.min(...rooms.map((r) => r.price)))} / nuit` },
+  { id: 'sejour', title: 'Chambres seules', desc: 'Passer la nuit sur place', price: roomRange ? `dès ${formatAr(roomRange.min)} / nuit` : null },
 ]
 
 export default function QuoteSimulator() {
@@ -74,7 +77,7 @@ export default function QuoteSimulator() {
                 <input type="radio" name="formula" value={f.id} checked={input.formula === f.id} onChange={() => patch({ formula: f.id })} className="sr-only" />
                 <span className="block font-semibold text-[#2B211B]">{f.title}</span>
                 <span className="mt-1 block text-xs leading-snug text-slate-600">{f.desc}</span>
-                <span className="mt-2 block text-sm font-bold text-[#C2410C]">{f.price}</span>
+                {f.price && <span className="mt-2 block text-sm font-bold text-[#C2410C]">{f.price}</span>}
               </label>
             ))}
           </div>

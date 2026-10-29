@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { activitiesList, business, prices, rooms, whatsappLink } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
+import { roomPriceRange } from '../lib/rooms.js'
 import { businessSchema, faqSchema, websiteSchema } from '../lib/schema.js'
 import Bento from '../components/Bento.jsx'
 import CinemaFeature from '../components/CinemaFeature.jsx'
@@ -24,6 +25,8 @@ import Tilt from '../components/Tilt.jsx'
 
 const headline = 'Salle de réception, piscine et chambres à Antananarivo'.split(' ')
 
+const roomRange = roomPriceRange(rooms)
+
 const offers = [
   {
     to: '/salle-reception-evenements',
@@ -44,7 +47,7 @@ const offers = [
     photo: 'chambreTwin',
     title: 'Chambres sur place',
     text: 'Chambres climatisées avec eau chaude, wifi et terrasse privée pour prolonger la fête.',
-    price: `dès ${formatAr(Math.min(...rooms.map((r) => r.price)))} / nuit`,
+    price: roomRange ? `dès ${formatAr(roomRange.min)} / nuit` : null,
   },
 ]
 
@@ -102,7 +105,7 @@ export function Component() {
                   <div className="p-6">
                     <h3>{o.title}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-slate-600">{o.text}</p>
-                    <p className="mt-4 flex items-center justify-between text-sm font-bold text-[#C2410C]">
+                    <p className={`mt-4 flex items-center ${o.price ? 'justify-between' : 'justify-end'} text-sm font-bold text-[#C2410C]`}>
                       {o.price}
                       <span className="inline-flex items-center gap-1 transition group-hover:translate-x-1">Découvrir <ArrowIcon width={16} height={16} /></span>
                     </p>
@@ -137,7 +140,9 @@ export function Component() {
           <p className="eyebrow">Chambres</p>
           <h2 id="chambres-titre" className="section-title max-w-3xl">Prolongez la fête, dormez sur place</h2>
           <p className="section-lead">
-            Quatre types de chambres climatisées, de {formatAr(Math.min(...rooms.map((r) => r.price)))} à {formatAr(Math.max(...rooms.map((r) => r.price)))} la nuit.
+            {roomRange
+              ? <>Quatre types de chambres climatisées, de {formatAr(roomRange.min)} à {formatAr(roomRange.max)} la nuit.</>
+              : 'Des chambres climatisées pour dormir sur place.'}
           </p>
         </Reveal>
         <div className="mx-auto mt-8 max-w-[90rem]"><RoomCarousel /></div>

@@ -1,3 +1,4 @@
+import { roomPriceRange } from './rooms.js'
 import { SITE_URL, absoluteUrl, business, faqs, hours, mapsDirectionsUrl, packCouple, pageByPath, rooms, prices, privatisationIncludes, receptionIncludes } from '../data/site.js'
 
 const businessId = `${SITE_URL}/#business`
@@ -6,7 +7,8 @@ const mga = (amount) => Math.round(amount).toLocaleString('fr-FR').replace(/\s/g
 
 // Du prix de chambre le plus bas au prix de privatisation le plus haut.
 const priceRange = () => {
-  const low = rooms.length ? Math.min(...rooms.map((r) => r.price)) : Math.min(prices.privatisation.jour, prices.privatisation.nuit)
+  const range = roomPriceRange(rooms)
+  const low = range ? range.min : Math.min(prices.privatisation.jour, prices.privatisation.nuit)
   const high = Math.max(prices.privatisation.jour, prices.privatisation.nuit)
   return `${mga(low)} – ${mga(high)} MGA`
 }
