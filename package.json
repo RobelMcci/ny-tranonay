@@ -4,10 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/fetch-content.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/fetch-content.mjs",
     "build": "vite-react-ssg build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "pretest": "node scripts/fetch-content.mjs --seed",
     "test": "vitest run",
     "og": "node scripts/make-og.mjs",
     "icons": "node scripts/make-icons.mjs",

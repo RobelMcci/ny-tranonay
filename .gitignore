@@ -26,3 +26,7 @@ dist-ssr
 # Supabase local
 supabase/.temp
 supabase/.branches
+
+# Contenu généré au build
+src/data/content.snapshot.json
+src/assets/cms/
