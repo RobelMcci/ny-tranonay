@@ -226,7 +226,8 @@ export function Component() {
   const dirtyEntries = load.status === 'ready' ? entries.filter(isRoomDirty) : []
   const dirty = dirtyEntries.length > 0
   const hasNew = entries.some((entry) => !entry.base)
-  useUnsavedWarning(dirty)
+  // Dialogue « Quitter sans enregistrer ? » (navigation interne) + confirmation du navigateur (onglet).
+  const leaveDialog = useUnsavedWarning(dirty)
 
   const visibleCount = entries.filter((entry) => entry.base?.visible).length
 
@@ -363,6 +364,7 @@ export function Component() {
 
   return (
     <section aria-labelledby="titre-chambres" className="pb-40 md:pb-28">
+      {leaveDialog}
       <h1 id="titre-chambres" className="text-2xl sm:text-3xl">
         Chambres
       </h1>

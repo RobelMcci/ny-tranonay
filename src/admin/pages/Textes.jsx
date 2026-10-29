@@ -129,7 +129,8 @@ export function Component() {
   const ready = load.status === 'ready'
   const dirtySlots = ready ? textSlots.filter((slot) => form[slot.key] !== base[slot.key]) : []
   const dirty = dirtySlots.length > 0
-  useUnsavedWarning(dirty)
+  // Dialogue « Quitter sans enregistrer ? » (navigation interne) + confirmation du navigateur (onglet).
+  const leaveDialog = useUnsavedWarning(dirty)
 
   const errorOf = (slot) => {
     const value = form[slot.key] ?? ''
@@ -196,6 +197,7 @@ export function Component() {
 
   return (
     <section aria-labelledby="titre-textes" className="pb-40 md:pb-28">
+      {leaveDialog}
       <h1 id="titre-textes" className="text-2xl sm:text-3xl">
         Textes des pages
       </h1>

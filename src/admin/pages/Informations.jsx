@@ -104,7 +104,8 @@ export function Component() {
 
   const errors = useMemo(() => validateSettings(values), [values])
   const dirty = load.status === 'ready' && !sameForm(values, saved)
-  useUnsavedWarning(dirty)
+  // Dialogue « Quitter sans enregistrer ? » (navigation interne) + confirmation du navigateur (onglet).
+  const leaveDialog = useUnsavedWarning(dirty)
 
   const visibleError = (key) => (attempted || touched[key] ? errors[key] : undefined)
 
@@ -150,6 +151,7 @@ export function Component() {
 
   return (
     <section aria-labelledby="titre-informations" className="pb-40 md:pb-28">
+      {leaveDialog}
       <h1 id="titre-informations" className="text-2xl sm:text-3xl">
         Informations
       </h1>

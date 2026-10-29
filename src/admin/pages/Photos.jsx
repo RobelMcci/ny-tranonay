@@ -274,7 +274,8 @@ function Library({ entries, setEntries, usageContext, announce }) {
 
   const dirtyEntries = entries.filter(isPhotoDirty)
   const dirty = dirtyEntries.length > 0
-  useUnsavedWarning(dirty || uploading)
+  // Dialogue « Quitter sans enregistrer ? » (navigation interne) + confirmation du navigateur (onglet).
+  const leaveDialog = useUnsavedWarning(dirty || uploading)
 
   // Le focus est déplacé une fois les erreurs et les nouveaux éléments affichés (liste d'identifiants candidats).
   useEffect(() => {
@@ -387,6 +388,7 @@ function Library({ entries, setEntries, usageContext, announce }) {
 
   return (
     <>
+      {leaveDialog}
       <UploadForm
         categories={categories}
         existingKeys={entries.map((entry) => entry.id)}

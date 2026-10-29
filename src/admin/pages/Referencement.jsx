@@ -217,7 +217,8 @@ export function Component() {
 
   const dirtyEntries = load.status === 'ready' ? entries.filter(isDirty) : []
   const dirty = dirtyEntries.length > 0
-  useUnsavedWarning(dirty)
+  // Dialogue « Quitter sans enregistrer ? » (navigation interne) + confirmation du navigateur (onglet).
+  const leaveDialog = useUnsavedWarning(dirty)
 
   const errorsOf = (entry) => {
     const errors = validatePageSeo(entry.form)
@@ -279,6 +280,7 @@ export function Component() {
 
   return (
     <section aria-labelledby="titre-referencement" className="pb-40 md:pb-28">
+      {leaveDialog}
       <h1 id="titre-referencement" className="text-2xl sm:text-3xl">
         Référencement
       </h1>

@@ -137,7 +137,8 @@ export function Component() {
   }, [])
 
   const dirty = load.status === 'ready' && rows.some((row) => drafts[row.id] !== undefined && drafts[row.id] !== row.label)
-  useUnsavedWarning(dirty)
+  // Dialogue « Quitter sans enregistrer ? » (navigation interne) + confirmation du navigateur (onglet).
+  const leaveDialog = useUnsavedWarning(dirty)
 
   const itemsOf = (key) => rows.filter((row) => row.list_key === key).sort(byPosition)
   const setBusyFor = (id, value) => setBusy((b) => ({ ...b, [id]: value }))
@@ -267,6 +268,7 @@ export function Component() {
 
   return (
     <section aria-labelledby="titre-listes" className="pb-16">
+      {leaveDialog}
       <h1 id="titre-listes" className="text-2xl sm:text-3xl">
         Listes
       </h1>

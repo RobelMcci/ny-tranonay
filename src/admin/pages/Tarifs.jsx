@@ -62,7 +62,8 @@ export function Component() {
   )
   const changed = prices.filter((p) => !parsed[p.key].ok || parsed[p.key].value !== p.amount)
   const dirty = load.status === 'ready' && changed.length > 0
-  useUnsavedWarning(dirty)
+  // Dialogue « Quitter sans enregistrer ? » (navigation interne) + confirmation du navigateur (onglet).
+  const leaveDialog = useUnsavedWarning(dirty)
 
   const errorFor = (p) => (attempted || touched[p.key]) && !parsed[p.key].ok ? parsed[p.key].error : undefined
 
@@ -113,6 +114,7 @@ export function Component() {
 
   return (
     <section aria-labelledby="titre-tarifs" className="pb-40 md:pb-28">
+      {leaveDialog}
       <h1 id="titre-tarifs" className="text-2xl sm:text-3xl">
         Tarifs
       </h1>
