@@ -187,3 +187,71 @@ export function checkTokens(texts, vars) {
   const names = unknown.map((name) => `{{${name}}}`).join(', ')
   return `${unknown.length === 1 ? 'Variable inconnue' : 'Variables inconnues'} : ${names}. Utilisez le bouton « Insérer une variable ».`
 }
+
+export const TEXT_LIMIT = 200
+export const TEXT_LIMIT_MULTILINE = 2000
+export const TEXT_MAX_LINE_BREAKS = 20
+
+/** Surcharge enregistrée utilisable : une chaîne non blanche posée directement sur l'objet (jamais héritée). */
+function storedOverride(overrides, key) {
+  if (!overrides || !Object.hasOwn(overrides, key)) return null
+  const value = overrides[key]
+  return typeof value === 'string' && value.trim() !== '' ? value : null
+}
+
+/**
+ * Textes réellement affichés : la surcharge si elle est une chaîne non blanche, sinon le défaut de l'emplacement.
+ * Les surcharges d'une clé qui n'est pas un emplacement déclaré sont ignorées.
+ * @param {{ key: string, default: string }[]} slots
+ * @param {Record<string, unknown> | null | undefined} overrides
+ * @returns {Record<string, string>}
+ */
+export function effectiveTexts(slots, overrides) {
+  return Object.fromEntries(slots.map((slot) => [slot.key, storedOverride(overrides, slot.key) ?? slot.default]))
+}
+
+/** Saisie nettoyée d'un emplacement : espaces autour retirés ; une seule ligne pour un champ court. */
+function normalizeText(slot, value) {
+  const text = typeof value === 'string' ? value.replace(/\r\n?/g, '\n').trim() : ''
+  return slot.multiline ? text : text.replace(/\s*\n\s*/g, ' ')
+}
+
+/**
+ * Écritures nécessaires pour passer des surcharges enregistrées à la saisie. Un champ vide ou égal au défaut
+ * veut dire « pas de surcharge » ; un champ absent de `current` n'est pas touché.
+ * @param {{ key: string, default: string, multiline: boolean }[]} slots
+ * @param {Record<string, string>} current Valeurs saisies (clé → texte).
+ * @param {Record<string, unknown> | null | undefined} overrides Surcharges enregistrées.
+ * @returns {{ upserts: { key: string, value: string }[], deletes: string[] }}
+ */
+export function textChanges(slots, current, overrides) {
+  const upserts = []
+  const deletes = []
+  for (const slot of slots) {
+    if (!current || !Object.hasOwn(current, slot.key)) continue
+    const value = normalizeText(slot, current[slot.key])
+    const stored = storedOverride(overrides, slot.key)
+    if (value === '' || value === slot.default) {
+      if (stored !== null) deletes.push(slot.key)
+    } else if (value !== stored) {
+      upserts.push({ key: slot.key, value })
+    }
+  }
+  return { upserts, deletes }
+}
+
+/**
+ * Longueur et retours à la ligne d'un texte saisi (le texte vide est permis : il rétablit le défaut).
+ * Les variables `{{…}}` se vérifient à part (`checkTokens`).
+ * @param {{ multiline: boolean }} slot
+ * @param {string} value
+ * @returns {string | null}
+ */
+export function validateText(slot, value) {
+  const text = normalizeText(slot, value)
+  const limit = slot.multiline ? TEXT_LIMIT_MULTILINE : TEXT_LIMIT
+  const length = Array.from(text).length
+  if (length > limit) return `Ce texte est trop long : ${limit} caractères au plus (actuellement ${length}).`
+  if (slot.multiline && text.split('\n').length - 1 > TEXT_MAX_LINE_BREAKS) return `Trop de retours à la ligne : ${TEXT_MAX_LINE_BREAKS} au plus.`
+  return null
+}

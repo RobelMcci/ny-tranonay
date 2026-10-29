@@ -285,6 +285,35 @@ export async function savePageSeo(page) {
   return pageFromRow(data[0])
 }
 
+/**
+ * Surcharges de textes du brouillon (les textes sans ligne gardent leur défaut du code).
+ * @returns {Promise<Record<string, string>>} clé d'emplacement → texte
+ */
+export async function loadTexts() {
+  const { data, error } = await getSupabase().from('texts').select('key, value')
+  if (error) throw failureFr('Impossible de charger les textes.', error)
+  return Object.fromEntries((data ?? []).map((row) => [row.key, row.value]))
+}
+
+/**
+ * Enregistre les surcharges en deux requêtes : un seul upsert, puis une seule suppression (retour au défaut).
+ * Si l'upsert échoue, rien n'est supprimé ; si la suppression échoue après un upsert réussi, le message le dit.
+ * @param {{ upserts: { key: string, value: string }[], deletes: string[] }} changes
+ */
+export async function saveTexts({ upserts, deletes }) {
+  if (upserts.length > 0) {
+    const { error } = await getSupabase().from('texts').upsert(upserts, { onConflict: 'key' })
+    if (error) throw failureFr('Impossible d’enregistrer les textes.', error)
+  }
+  if (deletes.length > 0) {
+    const { error } = await getSupabase().from('texts').delete().in('key', deletes)
+    if (error) {
+      if (upserts.length > 0) throw new Error('Les textes modifiés sont enregistrés, mais le retour au texte d’origine a échoué : réessayez.')
+      throw failureFr('Impossible de rétablir le texte d’origine.', error)
+    }
+  }
+}
+
 const PHOTO_BUCKET = 'photos'
 
 /**
