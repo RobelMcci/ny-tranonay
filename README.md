@@ -208,7 +208,9 @@ npx supabase status -o env   # affiche API_URL, ANON_KEY, SERVICE_ROLE_KEY de la
   locale** (`db:reset`), importe le contenu, crée deux comptes jetables (un administrateur, un non administrateur, mots de passe
   aléatoires, supprimés à la fin), reconstruit le site avec la base locale et vérifie : connexion, modification d'un tarif, liste des
   changements, publication, contenu du site reconstruit, et refus d'un compte non administrateur. Il refuse de tourner contre une base
-  qui n'est pas locale. À la fin, la base locale reste initialisée avec le contenu d'origine. Il ne passe pas par la fonction Netlify
+  qui n'est pas locale. À la fin, les comptes de test sont supprimés mais la base locale reste dans l'état du test (tarif de réception
+  modifié, deux instantanés) et `dist/` contient le site construit avec cette base : pour repartir du contenu d'origine, relancer
+  `npm run db:reset && npm run seed:db`. Il ne passe pas par la fonction Netlify
   (testée par `netlify/tests/publish.test.js`) : la publication y est faite par l'appel SQL `publish_content` avec la session de
   l'administrateur.
 

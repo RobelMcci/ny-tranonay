@@ -30,3 +30,7 @@ supabase/.branches
 # Contenu généré au build
 src/data/content.snapshot.json
 src/assets/cms/
+
+# Test de bout en bout (Playwright)
+playwright-report/
+test-results/
