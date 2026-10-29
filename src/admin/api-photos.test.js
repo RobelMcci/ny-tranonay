@@ -158,10 +158,11 @@ describe('uploadPhoto', () => {
 describe('deletePhoto', () => {
   const photo = { key: 'x', storagePath: 'x.jpg' }
 
-  it('supprime la ligne puis le fichier', async () => {
+  it('supprime la ligne mais garde le fichier du Storage (des versions publiées peuvent encore y renvoyer)', async () => {
     state.responses.photos = { data: [{ key: 'x' }], error: null }
     await expect(api.deletePhoto(photo)).resolves.toEqual({ warning: null })
-    expect(names().filter((name) => name === 'photos.delete' || name === 'storage.remove')).toEqual(['photos.delete', 'storage.remove'])
+    expect(names()).toContain('photos.delete')
+    expect(names().some((name) => name.startsWith('storage'))).toBe(false)
   })
 
   it('ne touche pas au bucket pour une photo du site', async () => {
@@ -182,14 +183,5 @@ describe('deletePhoto', () => {
     expect(names().some((name) => name.startsWith('storage'))).toBe(false)
   })
 
-  it('renvoie un avertissement, pas une erreur, quand le fichier ne peut pas être retiré', async () => {
-    state.responses.photos = { data: [{ key: 'x' }], error: null }
-    state.responses['storage.remove'] = { data: null, error: { message: 'boom' } }
-    const result = await api.deletePhoto(photo)
-    expect(result.warning).toMatch(/fichier/)
-    state.responses['storage.remove'] = () => {
-      throw new Error('réseau coupé')
-    }
-    expect((await api.deletePhoto(photo)).warning).toMatch(/fichier/)
-  })
+
 })

@@ -102,9 +102,15 @@ describe('publishContent', () => {
     expect((await failure(api.publishContent())).message).toBe(BUSY)
   })
 
-  it('panne réseau : « publication indisponible »', async () => {
-    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
-    expect((await failure(api.publishContent())).message).toBe(UNAVAILABLE)
+  it('panne réseau (fetch rejeté) : « réessayez », pas « disponible que sur le site en ligne »', async () => {
+    for (const reason of [new TypeError('Failed to fetch'), new TypeError('NetworkError when attempting to fetch resource.'), new Error('Load failed')]) {
+      fetchMock.mockRejectedValueOnce(reason)
+      const error = await failure(api.publishContent())
+      expect(error.message).toBe(BUSY)
+      expect(error.rejected).toBeUndefined()
+    }
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    expect((await failure(api.rebuildSite())).message).toBe(BUSY)
   })
 
   it('build hook en échec : message explicite et identifiant de la version conservée', async () => {

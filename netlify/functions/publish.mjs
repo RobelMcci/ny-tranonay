@@ -6,7 +6,8 @@
 //
 // Variables d'environnement requises : SUPABASE_URL, SUPABASE_ANON_KEY, BUILD_HOOK_URL.
 
-const TIMEOUT_MS = 10_000
+// Délai de chaque appel sortant : RPC puis build hook (4 s + 4 s) doivent tenir dans les 10 s d'une fonction Netlify.
+const TIMEOUT_MS = 4_000
 const MAX_LABEL = 60
 const MAX_BODY = 4096
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -97,7 +98,7 @@ async function readJson(response) {
 
 /**
  * Appelle une fonction SQL avec le jeton de l'utilisateur.
- * @returns {Promise<{ kind: 'ok', data: unknown } | { kind: 'forbidden' } | { kind: 'rejected', message: string } | { kind: 'upstream' }>}
+ * @returns {Promise<{ kind: 'ok', data: unknown } | { kind: 'unauthorized' } | { kind: 'forbidden' } | { kind: 'rejected', message: string } | { kind: 'upstream' }>}
  */
 async function callRpc({ fetchImpl, baseUrl, anonKey, jwt }, name, args) {
   let response
@@ -116,7 +117,9 @@ async function callRpc({ fetchImpl, baseUrl, anonKey, jwt }, name, args) {
   const error = await readJson(response)
   const code = error && typeof error.code === 'string' ? error.code : ''
   const message = error && typeof error.message === 'string' ? error.message : ''
-  if (response.status === 401 || response.status === 403 || code === '42501' || /forbidden/i.test(message)) return { kind: 'forbidden' }
+  // 401 : jeton refusé par Supabase (session expirée) → le tableau de bord demande de se reconnecter.
+  if (response.status === 401) return { kind: 'unauthorized' }
+  if (response.status === 403 || code === '42501' || /forbidden/i.test(message)) return { kind: 'forbidden' }
   // « Version introuvable » n'a de sens que pour un retour en arrière : P0002 (instantané absent) et 22P02 (identifiant illisible)
   // viennent de `restore_snapshot`. Un 404 (hors code PGRST*, qui signale une fonction absente, ex. migration manquante) aussi.
   const isRestore = name === 'restore_snapshot'
@@ -138,6 +141,7 @@ async function triggerBuild(fetchImpl, hookUrl) {
 }
 
 function failureResponse(result) {
+  if (result.kind === 'unauthorized') return reply(401, { error: 'unauthorized' })
   if (result.kind === 'forbidden') return reply(403, { error: 'forbidden' })
   if (result.kind === 'rejected') return reply(422, { error: 'rejected', message: result.message })
   return reply(502, { error: 'upstream' })
@@ -167,7 +171,8 @@ export async function handle(request, { env, fetchImpl }) {
 
     if (input.action === 'rebuild') {
       const check = await callRpc(rpc, 'is_admin', {})
-      if (check.kind !== 'ok') return check.kind === 'forbidden' ? reply(403, { error: 'forbidden' }) : reply(502, { error: 'upstream' })
+      if (check.kind === 'unauthorized' || check.kind === 'forbidden') return failureResponse(check)
+      if (check.kind !== 'ok') return reply(502, { error: 'upstream' })
       if (check.data !== true) return reply(403, { error: 'forbidden' })
       return (await triggerBuild(fetchImpl, hook.href)) ? reply(200, { ok: true }) : reply(502, { error: 'build_hook_failed' })
     }

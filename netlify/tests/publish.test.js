@@ -118,9 +118,22 @@ describe('publish function', () => {
     noLeak(text)
   })
 
-  it('la RPC répond 401 : 403 sans build hook', async () => {
-    const { response, calls } = await run(request({ action: 'publish' }), { '/rest/v1/rpc/publish_content': json({ message: 'JWT expired' }, 401), ...hookOk })
-    expect(response.status).toBe(403)
+  it('la RPC répond 401 (jeton expiré) : 401 unauthorized, sans build hook', async () => {
+    for (const action of ['publish', 'restore']) {
+      const body = action === 'restore' ? { action, snapshotId: UUID } : { action }
+      const rpc = action === 'restore' ? '/rest/v1/rpc/restore_snapshot' : '/rest/v1/rpc/publish_content'
+      const { response, body: reply, calls, text } = await run(request(body), { [rpc]: json({ code: 'PGRST301', message: 'JWT expired' }, 401), ...hookOk })
+      expect(response.status).toBe(401)
+      expect(reply).toEqual({ error: 'unauthorized' })
+      expect(calls).toHaveLength(1)
+      noLeak(text)
+    }
+  })
+
+  it('rebuild : is_admin répond 401 (jeton expiré) → 401 sans build hook', async () => {
+    const { response, body, calls } = await run(request({ action: 'rebuild' }), { '/rest/v1/rpc/is_admin': json({ message: 'JWT expired' }, 401), ...hookOk })
+    expect(response.status).toBe(401)
+    expect(body).toEqual({ error: 'unauthorized' })
     expect(calls).toHaveLength(1)
   })
 
@@ -367,7 +380,7 @@ describe('publish function', () => {
     }
   })
 
-  it('chaque appel sortant (RPC puis build hook) reçoit un délai de 10 s', async () => {
+  it('chaque appel sortant (RPC puis build hook) reçoit un délai de 4 s (les deux tiennent dans les 10 s de Netlify)', async () => {
     const created = []
     const spy = vi.spyOn(AbortSignal, 'timeout').mockImplementation(() => {
       const signal = new AbortController().signal
@@ -377,7 +390,7 @@ describe('publish function', () => {
     try {
       const { calls } = await run(request({ action: 'publish' }), { '/rest/v1/rpc/publish_content': json(UUID), ...hookOk })
       expect(spy).toHaveBeenCalledTimes(2)
-      expect(spy.mock.calls).toEqual([[10000], [10000]])
+      expect(spy.mock.calls).toEqual([[4000], [4000]])
       expect(calls[0].init.signal).toBe(created[0])
       expect(calls[1].init.signal).toBe(created[1])
       expect(calls.every((call) => call.init.signal.aborted === false)).toBe(true)

@@ -8,19 +8,13 @@ import { roomFromRow, roomToRow } from './rooms-map.js'
 import { settingsFromRow, settingsToRow } from './settings-map.js'
 import { getSupabase } from './supabase.js'
 
-/** Message d'erreur en français ; jamais de clé ni d'URL, seulement le texte renvoyé par Supabase. */
-function failure(action, error) {
-  const detail = error?.message ? ` (${String(error.message)})` : ''
-  return new Error(`${action}${detail}`)
-}
-
 /**
  * Brouillon courant : contenu construit depuis les tables modifiables (administrateurs seulement).
  * @returns {Promise<object>} Contenu au format « Content ».
  */
 export async function fetchDraft() {
   const { data, error } = await getSupabase().rpc('draft_content')
-  if (error) throw failure('Impossible de charger le brouillon.', error)
+  if (error) throw failureFr('Impossible de charger le brouillon.', error)
   if (!data || typeof data !== 'object') throw new Error('Impossible de charger le brouillon : réponse vide.')
   return data
 }
@@ -35,7 +29,7 @@ export async function fetchPublished() {
     .select('id, created_at, label, payload')
     .order('created_at', { ascending: false })
     .limit(1)
-  if (error) throw failure('Impossible de charger la version publiée.', error)
+  if (error) throw failureFr('Impossible de charger la version publiée.', error)
   return data?.[0] ?? null
 }
 
@@ -45,7 +39,7 @@ export async function fetchPublished() {
  */
 export async function loadSettings() {
   const { data, error } = await getSupabase().from('settings').select('*').eq('id', 1).maybeSingle()
-  if (error) throw failure('Impossible de charger les informations.', error)
+  if (error) throw failureFr('Impossible de charger les informations.', error)
   return settingsFromRow(data)
 }
 
@@ -55,7 +49,7 @@ export async function loadSettings() {
  */
 export async function saveSettings(settings) {
   const { error } = await getSupabase().from('settings').upsert(settingsToRow(settings), { onConflict: 'id' })
-  if (error) throw failure('Impossible d’enregistrer les informations.', error)
+  if (error) throw failureFr('Impossible d’enregistrer les informations.', error)
 }
 
 /**
@@ -64,7 +58,7 @@ export async function saveSettings(settings) {
  */
 export async function loadPrices() {
   const { data, error } = await getSupabase().from('prices').select('key, label, amount, unit').order('key')
-  if (error) throw failure('Impossible de charger les tarifs.', error)
+  if (error) throw failureFr('Impossible de charger les tarifs.', error)
   return data ?? []
 }
 
@@ -76,7 +70,7 @@ export async function loadPrices() {
 export async function savePrices(changes) {
   for (const { key, amount, label } of changes) {
     const { data, error } = await getSupabase().from('prices').update({ amount }).eq('key', key).select('key')
-    if (error) throw failure(`Impossible d’enregistrer le tarif « ${label ?? key} ».`, error)
+    if (error) throw failureFr(`Impossible d’enregistrer le tarif « ${label ?? key} ».`, error)
     if (!data?.length) throw new Error(`Impossible d’enregistrer le tarif « ${label ?? key} » : tarif introuvable.`)
   }
 }
@@ -425,25 +419,18 @@ export async function uploadPhoto({ blob, width, height, alt, category, existing
 }
 
 /**
- * Supprime une photo : la ligne d'abord (refusée si un emplacement ou une chambre l'utilise), puis le fichier du bucket.
- * Un fichier qui ne peut pas être retiré n'est pas une erreur : la photo est bien supprimée, un avertissement est renvoyé.
+ * Supprime une photo du brouillon (refusé si un emplacement ou une chambre l'utilise).
+ * Le fichier téléversé reste dans le Storage, volontairement : les versions déjà publiées peuvent encore y renvoyer, et
+ * « Revenir à cette version » doit pouvoir reconstruire le site avec elles.
  * @param {{ key: string, storagePath: string | null }} photo
- * @returns {Promise<{ warning: string | null }>}
+ * @returns {Promise<{ warning: string | null }>} `warning` toujours nul (forme gardée pour l'écran Photos).
  */
 export async function deletePhoto(photo) {
-  const supabase = getSupabase()
   const action = 'Impossible de supprimer la photo.'
-  const { data, error } = await supabase.from('photos').delete().eq('key', photo.key).select('key')
+  const { data, error } = await getSupabase().from('photos').delete().eq('key', photo.key).select('key')
   if (error?.code === '23503') throw new Error('Cette photo est encore utilisée (emplacement ou chambre).')
   if (error) throw failureFr(action, error)
   if (!data?.length) throw new Error(`${action} Photo introuvable ou vous n’avez pas les droits nécessaires.`)
-  if (!photo.storagePath) return { warning: null }
-  try {
-    const { error: removeError } = await supabase.storage.from(PHOTO_BUCKET).remove([photo.storagePath])
-    if (removeError) throw removeError
-  } catch {
-    return { warning: 'La photo est supprimée, mais son fichier n’a pas pu être retiré du stockage. Il n’est plus visible nulle part.' }
-  }
   return { warning: null }
 }
 
@@ -483,8 +470,10 @@ async function callPublishFunction(payload) {
       body: JSON.stringify(payload),
     })
   } catch {
-    throw new Error(UNAVAILABLE)
+    // Réseau coupé ou instable : la demande a pu partir (réponse perdue), erreur incertaine → « réessayez ».
+    throw new Error(BUSY)
   }
+  // Fonction non servie par ce serveur (`npm run dev`, `vite preview`) : rien n'a été enregistré.
   if (response.status === 404 || response.status === 405) throw new Error(UNAVAILABLE)
 
   let body = null
