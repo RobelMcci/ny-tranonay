@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import seed from '../data/content.seed.json'
-import { diffContent, modificationsLabel } from './diff.js'
+import { SECTION_TITLES, diffContent, groupChanges, modificationsLabel } from './diff.js'
 
 const clone = () => structuredClone(seed)
 const norm = (s) => s.replace(/\s/g, ' ')
@@ -148,7 +148,7 @@ describe('diffContent', () => {
     expect(added.find((c) => c.section === 'photoSlots')).toMatchObject({
       kind: 'added',
       label: 'Emplacement photo — Bandeau d’accueil, 1re photo (jour)',
-      after: 'piscine',
+      after: seed.photos.find((p) => p.key === 'piscine').alt,
     })
     expect(added.find((c) => c.section === 'texts')).toMatchObject({
       kind: 'added',
@@ -157,6 +157,47 @@ describe('diffContent', () => {
     })
     const removed = diffContent(after, clone())
     expect(removed.map((c) => c.kind)).toEqual(['removed', 'removed'])
+  })
+
+  it('montre le texte alternatif de la photo plutôt que sa clé dans le libellé', () => {
+    const after = clone()
+    after.photos.find((p) => p.key === 'escalier').category = 'Autre'
+    const [change] = diffContent(clone(), after)
+    const alt = seed.photos.find((p) => p.key === 'escalier').alt
+    expect(alt.length).toBeGreaterThan(60)
+    expect(change.label).toBe(`Photo — ${alt.slice(0, 60)}… : catégorie`)
+  })
+
+  it('garde un texte alternatif court en entier et la clé quand il est vide', () => {
+    const after = clone()
+    const short = after.photos.find((p) => p.key === 'piscine')
+    short.alt = 'Piscine de nuit'
+    const [changed] = diffContent(clone(), after)
+    expect(changed.label).toBe('Photo — Piscine de nuit : texte alternatif')
+    short.alt = ''
+    const [empty] = diffContent(clone(), after)
+    expect(empty.label).toBe('Photo — piscine : texte alternatif')
+  })
+
+  it('utilise le texte alternatif pour une photo ajoutée ou retirée', () => {
+    const after = clone()
+    after.photos.push({ ...after.photos[0], key: 'nouvelle', alt: 'Nouvelle vue du jardin' })
+    const removed = after.photos.splice(1, 1)[0]
+    const changes = diffContent(clone(), after)
+    expect(changes.find((c) => c.kind === 'added').label).toBe('Photo — Nouvelle vue du jardin')
+    const removedLabel = changes.find((c) => c.kind === 'removed').label
+    expect(removedLabel.startsWith('Photo — ')).toBe(true)
+    expect(removedLabel).not.toContain(removed.key)
+  })
+
+  it('montre le texte alternatif (avant et après) pour les emplacements photo, la clé si la photo est inconnue', () => {
+    const before = clone()
+    before.photoSlots = { 'hero.1': 'piscine' }
+    const after = clone()
+    after.photoSlots = { 'hero.1': 'photo-inconnue' }
+    const [change] = diffContent(before, after)
+    expect(change.before).toBe(seed.photos.find((p) => p.key === 'piscine').alt)
+    expect(change.after).toBe('photo-inconnue')
   })
 
   it('utilise la clé quand l’emplacement est inconnu', () => {
@@ -233,5 +274,42 @@ describe('modificationsLabel', () => {
   it('signale l’absence de version publiée', () => {
     expect(modificationsLabel(3, false)).toBe('Aucune version publiée pour l’instant : 3 modifications non publiées')
     expect(modificationsLabel(1, false)).toBe('Aucune version publiée pour l’instant : 1 modification non publiée')
+  })
+})
+
+describe('groupChanges', () => {
+  it('regroupe par section, dans l’ordre de l’écran, avec un titre français', () => {
+    const after = clone()
+    after.texts = { 'accueil.hero.titre': 'T' }
+    after.faqs[0].answer = 'z'
+    after.settings.city = 'Autre'
+    after.prices[0].amount = 1
+    const groups = groupChanges(diffContent(clone(), after))
+    expect(groups.map((g) => g.section)).toEqual(['settings', 'prices', 'faqs', 'texts'])
+    expect(groups.map((g) => g.title)).toEqual(['Informations', 'Tarifs', 'FAQ', 'Textes'])
+    expect(groups.every((g) => g.changes.length > 0 && g.changes.every((c) => c.section === g.section))).toBe(true)
+  })
+
+  it('ne renvoie aucun groupe sans changement', () => {
+    expect(groupChanges([])).toEqual([])
+  })
+
+  it('donne un titre à chaque section du contrat', () => {
+    expect(SECTION_TITLES).toEqual({
+      settings: 'Informations',
+      prices: 'Tarifs',
+      rooms: 'Chambres',
+      lists: 'Listes',
+      faqs: 'FAQ',
+      pages: 'Pages (référencement)',
+      photos: 'Photos',
+      photoSlots: 'Emplacements de photos',
+      texts: 'Textes',
+    })
+  })
+
+  it('garde une section inconnue plutôt que de la perdre', () => {
+    const groups = groupChanges([{ section: 'autre', label: 'x', kind: 'added', after: 'y' }])
+    expect(groups).toEqual([{ section: 'autre', title: 'autre', changes: [{ section: 'autre', label: 'x', kind: 'added', after: 'y' }] }])
   })
 })

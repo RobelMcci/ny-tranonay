@@ -5,12 +5,25 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Fonction de publication (netlify/functions/publish.mjs). Variables d'environnement Netlify requises
+# (à renseigner dans l'interface Netlify, jamais dans le dépôt) :
+#   SUPABASE_URL, SUPABASE_ANON_KEY  adresse et clé anonyme du projet Supabase ;
+#   BUILD_HOOK_URL                   adresse secrète du « build hook » qui relance la construction du site.
+[functions]
+  directory = "netlify/functions"
+
 # Netlify sert automatiquement dist/404.html (page 404 pré-rendue) pour les URL inconnues.
 
 [[headers]]
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Version en ligne : toujours relue, sinon l'écran « Publier » suivrait une réponse en cache.
+[[headers]]
+  for = "/version.json"
+  [headers.values]
+    Cache-Control = "no-store"
 
 [[headers]]
   for = "/*"

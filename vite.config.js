@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { imagetools } from 'vite-imagetools'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { SITE_URL, business, pages, prices, rooms } from './src/data/site.js'
+import { SITE_URL, business, contentVersion, pages, prices, rooms } from './src/data/site.js'
 
 const buildSitemap = () => {
   const today = new Date().toISOString().slice(0, 10)
@@ -70,10 +70,12 @@ export default defineConfig({
       writeFileSync(resolve(out, 'sitemap.xml'), buildSitemap())
       writeFileSync(resolve(out, 'robots.txt'), buildRobots())
       writeFileSync(resolve(out, 'llms.txt'), buildLlms())
+      // Version du contenu réellement en ligne : l'écran « Publier » la compare au dernier instantané.
+      writeFileSync(resolve(out, 'version.json'), `${JSON.stringify({ snapshot: contentVersion, builtAt: new Date().toISOString() }, null, 2)}\n`)
     },
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.js', 'scripts/**/*.test.js'],
+    include: ['src/**/*.test.js', 'scripts/**/*.test.js', 'netlify/**/*.test.js'],
   },
 })

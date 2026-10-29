@@ -15,6 +15,7 @@ import { LIST_LABELS } from './list-keys.js'
  */
 
 const MAX_VALUE = 120
+const MAX_PHOTO_NAME = 60
 
 const SETTING_LABELS = {
   name: 'Identité — Nom',
@@ -240,6 +241,13 @@ function diffPages(before, after) {
   return out
 }
 
+/** Nom lisible d'une photo : son texte alternatif (≈60 caractères), à défaut sa clé. */
+function photoName(photo) {
+  const alt = typeof photo?.alt === 'string' ? photo.alt.trim() : ''
+  if (!alt) return photo?.key ?? ''
+  return alt.length > MAX_PHOTO_NAME ? `${alt.slice(0, MAX_PHOTO_NAME)}…` : alt
+}
+
 function diffPhotos(before, after) {
   const b = arr(before)
   const a = arr(after)
@@ -249,21 +257,21 @@ function diffPhotos(before, after) {
   for (const photo of a) {
     const old = beforeByKey.get(photo.key)
     if (!old) {
-      out.push(change('photos', `Photo — ${photo.key}`, 'added', null, photo.alt))
+      out.push(change('photos', `Photo — ${photoName(photo)}`, 'added', null, photo.alt))
       continue
     }
     for (const [field, fieldLabel] of PHOTO_FIELDS) {
-      if (!sameValue(old[field], photo[field])) out.push(change('photos', `Photo — ${photo.key} : ${fieldLabel}`, 'changed', old[field], photo[field]))
+      if (!sameValue(old[field], photo[field])) out.push(change('photos', `Photo — ${photoName(photo)} : ${fieldLabel}`, 'changed', old[field], photo[field]))
     }
   }
   for (const photo of b) {
-    if (!afterKeys.has(photo.key)) out.push(change('photos', `Photo — ${photo.key}`, 'removed', photo.alt, null))
+    if (!afterKeys.has(photo.key)) out.push(change('photos', `Photo — ${photoName(photo)}`, 'removed', photo.alt, null))
   }
   return out
 }
 
 /** Surcharges (objet clé → valeur) : ajoutée = surcharge posée, retirée = retour au défaut. */
-function diffOverrides(section, before, after, labelFor) {
+function diffOverrides(section, before, after, labelFor, showBefore = (v) => v, showAfter = (v) => v) {
   const b = obj(before)
   const a = obj(after)
   const out = []
@@ -271,9 +279,18 @@ function diffOverrides(section, before, after, labelFor) {
     const had = Object.hasOwn(b, key)
     const has = Object.hasOwn(a, key)
     if (had && has && sameValue(b[key], a[key])) continue
-    out.push(change(section, labelFor(key), !had ? 'added' : !has ? 'removed' : 'changed', b[key], a[key]))
+    out.push(change(section, labelFor(key), !had ? 'added' : !has ? 'removed' : 'changed', showBefore(b[key]), showAfter(a[key])))
   }
   return out
+}
+
+/** Pour les emplacements : texte alternatif de la photo choisie si elle est connue dans le même contenu, sinon sa clé. */
+function photoShower(photos) {
+  const byKey = new Map(arr(photos).map((p) => [p.key, p]))
+  return (key) => {
+    const alt = byKey.get(key)?.alt
+    return typeof alt === 'string' && alt.trim() ? alt.trim() : key
+  }
 }
 
 const photoSlotByKey = new Map(photoSlots.map((slot) => [slot.key, slot]))
@@ -303,9 +320,38 @@ export function diffContent(before, after) {
     ...diffFaqs(b.faqs, a.faqs),
     ...diffPages(b.pages, a.pages),
     ...diffPhotos(b.photos, a.photos),
-    ...diffOverrides('photoSlots', b.photoSlots, a.photoSlots, photoSlotLabel),
+    ...diffOverrides('photoSlots', b.photoSlots, a.photoSlots, photoSlotLabel, photoShower(b.photos), photoShower(a.photos)),
     ...diffOverrides('texts', b.texts, a.texts, textLabel),
   ]
+}
+
+/** Titres français des sections, dans l'ordre d'affichage de l'écran « Publier ». */
+export const SECTION_TITLES = {
+  settings: 'Informations',
+  prices: 'Tarifs',
+  rooms: 'Chambres',
+  lists: 'Listes',
+  faqs: 'FAQ',
+  pages: 'Pages (référencement)',
+  photos: 'Photos',
+  photoSlots: 'Emplacements de photos',
+  texts: 'Textes',
+}
+
+/**
+ * Regroupe les changements par section (ordre de `SECTION_TITLES`, sections vides omises ; une section inconnue est gardée à la fin).
+ * @param {Change[]} changes
+ * @returns {{ section: string, title: string, changes: Change[] }[]}
+ */
+export function groupChanges(changes) {
+  const bySection = new Map()
+  for (const item of changes) {
+    if (!bySection.has(item.section)) bySection.set(item.section, [])
+    bySection.get(item.section).push(item)
+  }
+  const known = Object.keys(SECTION_TITLES)
+  const order = [...known, ...[...bySection.keys()].filter((section) => !known.includes(section))]
+  return order.filter((section) => bySection.has(section)).map((section) => ({ section, title: SECTION_TITLES[section] ?? section, changes: bySection.get(section) }))
 }
 
 /**

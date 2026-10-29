@@ -445,3 +445,117 @@ export async function deletePhoto(photo) {
   }
   return { warning: null }
 }
+
+const PUBLISH_FUNCTION = '/.netlify/functions/publish'
+const SESSION_EXPIRED = 'Session expirée : reconnectez-vous.'
+const BUSY = 'Service momentanément indisponible, réessayez.'
+const UNAVAILABLE = 'La publication n’est disponible que sur le site en ligne (ou avec `netlify dev`).'
+const BUILD_HOOK_FAILED = 'La version est enregistrée, mais le lancement de la construction du site a échoué : relancez la construction.'
+const REBUILD_FAILED = 'Le lancement de la construction du site a échoué : réessayez.'
+
+/**
+ * Appelle la fonction Netlify de publication avec le jeton de la session (jamais affiché ni copié ailleurs).
+ * Toute erreur est en français ; un échec du lancement de la construction porte `code = 'build_hook_failed'`
+ * et, quand une version a été enregistrée, son `snapshotId`.
+ * @param {{ action: 'publish', label?: string } | { action: 'restore', snapshotId: string } | { action: 'rebuild' }} payload
+ * @returns {Promise<object>} Corps JSON de la réponse (`{ snapshotId }` ou `{ ok: true }`).
+ */
+async function callPublishFunction(payload) {
+  const { data } = await getSupabase().auth.getSession()
+  const token = data?.session?.access_token
+  if (!token) throw new Error(SESSION_EXPIRED)
+
+  let response
+  try {
+    response = await fetch(PUBLISH_FUNCTION, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+  } catch {
+    throw new Error(UNAVAILABLE)
+  }
+  if (response.status === 404 || response.status === 405) throw new Error(UNAVAILABLE)
+
+  let body = null
+  try {
+    body = await response.json()
+  } catch {
+    // Corps absent ou non JSON : traité plus bas selon le statut.
+  }
+  if (response.ok) {
+    if (body && typeof body === 'object') return body
+    throw new Error(UNAVAILABLE)
+  }
+
+  if (response.status === 401) throw new Error(SESSION_EXPIRED)
+  if (response.status === 403) throw new Error('Vous n’avez pas les droits nécessaires.')
+  if (response.status === 422 && typeof body?.message === 'string' && body.message) throw new Error(body.message)
+  if (body?.error === 'build_hook_failed') {
+    const error = new Error(payload.action === 'rebuild' ? REBUILD_FAILED : BUILD_HOOK_FAILED)
+    error.code = 'build_hook_failed'
+    if (typeof body.snapshotId === 'string') error.snapshotId = body.snapshotId
+    throw error
+  }
+  throw new Error(BUSY)
+}
+
+async function snapshotResult(payload) {
+  const body = await callPublishFunction(payload)
+  if (typeof body.snapshotId !== 'string' || !body.snapshotId) throw new Error(BUSY)
+  return { snapshotId: body.snapshotId }
+}
+
+/**
+ * Publie le brouillon : crée une version, puis lance la construction du site.
+ * @param {string} [label] Étiquette facultative (60 caractères au plus ; vide = libellé par défaut côté serveur).
+ * @returns {Promise<{ snapshotId: string }>}
+ */
+export async function publishContent(label) {
+  const trimmed = typeof label === 'string' ? label.trim() : ''
+  return snapshotResult(trimmed ? { action: 'publish', label: trimmed } : { action: 'publish' })
+}
+
+/**
+ * Revient à une ancienne version : crée une NOUVELLE version copiée de l'ancienne (rien n'est effacé), puis lance la construction.
+ * @param {string} snapshotId
+ * @returns {Promise<{ snapshotId: string }>}
+ */
+export async function restoreSnapshot(snapshotId) {
+  return snapshotResult({ action: 'restore', snapshotId })
+}
+
+/** Relance la construction du site sans créer de version. */
+export async function rebuildSite() {
+  await callPublishFunction({ action: 'rebuild' })
+}
+
+/**
+ * Dernières versions enregistrées (sans leur contenu), de la plus récente à la plus ancienne.
+ * @param {number} [limit]
+ * @returns {Promise<{ id: string, created_at: string, label: string | null }[]>}
+ */
+export async function fetchHistory(limit = 20) {
+  const { data, error } = await getSupabase()
+    .from('content_snapshots')
+    .select('id, created_at, label')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) throw failureFr('Impossible de charger l’historique.', error)
+  return data ?? []
+}
+
+/**
+ * Version du contenu réellement en ligne (`snapshot` de `/version.json`), ou `null` si elle est inconnue.
+ * @returns {Promise<string | null>}
+ */
+export async function fetchBuildVersion() {
+  try {
+    const response = await fetch('/version.json', { cache: 'no-store' })
+    if (!response.ok) return null
+    const body = await response.json()
+    return typeof body?.snapshot === 'string' ? body.snapshot : null
+  } catch {
+    return null
+  }
+}
