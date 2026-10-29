@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { handle } from './publish.mjs'
+import { describe, expect, it, vi } from 'vitest'
+import { handle } from '../functions/publish.mjs'
 
 const SUPABASE_URL = 'https://projet.supabase.test'
 const ANON = 'ANON-SENTINEL-KEY'
@@ -292,5 +292,97 @@ describe('publish function', () => {
       Object.assign(console, original)
     }
     expect(seen).toEqual([])
+  })
+
+  it('schéma Bearer insensible à la casse, mais jamais de jeton vide, d’espace ou de saut de ligne', async () => {
+    const routes = () => ({ '/rest/v1/rpc/publish_content': json(UUID), ...hookOk, [HOOK]: new Response(null, { status: 200 }) })
+    for (const scheme of ['bearer', 'BEARER', 'BeArEr']) {
+      const { response, calls } = await run(request({ action: 'publish' }, { auth: `${scheme} ${JWT}` }), routes())
+      expect(response.status).toBe(200)
+      expect(calls[0].init.headers.Authorization).toBe(`Bearer ${JWT}`)
+    }
+    for (const auth of ['Bearer  two-spaces', 'bearer', 'bearer ', 'Bearer a\nb', 'Bearer a\r\nX: y', ' Bearer abc']) {
+      const fake = fakeFetch(routes())
+      const response = await handle({ method: 'POST', headers: { get: () => auth }, text: async () => '{"action":"publish"}' }, { env: ENV, fetchImpl: fake.impl })
+      expect(response.status).toBe(401)
+      expect(fake.calls).toHaveLength(0)
+    }
+  })
+
+  it('corps trop volumineux : 400 sans appel', async () => {
+    const { response, body, calls } = await run(request({ action: 'publish', label: 'x'.repeat(5000) }), { '/rest/v1/rpc/publish_content': json(UUID), ...hookOk })
+    expect(response.status).toBe(400)
+    expect(body).toEqual({ error: 'bad_request' })
+    expect(calls).toHaveLength(0)
+  })
+
+  it('408 et 429 de la RPC : 502 (côté Supabase), sans build hook', async () => {
+    for (const status of [408, 429]) {
+      const { response, body, calls } = await run(request({ action: 'publish' }), { '/rest/v1/rpc/publish_content': json({ message: 'slow down' }, status), ...hookOk })
+      expect(response.status).toBe(502)
+      expect(body).toEqual({ error: 'upstream' })
+      expect(calls).toHaveLength(1)
+    }
+  })
+
+  it('erreur métier inconnue (P0001 avec un autre texte) : 422 générique en français', async () => {
+    const { response, body, text } = await run(request({ action: 'publish' }), { '/rest/v1/rpc/publish_content': json({ code: 'P0001', message: 'something odd' }, 400), ...hookOk })
+    expect(response.status).toBe(422)
+    expect(body.error).toBe('rejected')
+    expect(body.message).toMatch(/refusée/)
+    expect(text).not.toContain('odd')
+  })
+
+  it('« introuvable » seulement pour restore : 404 / PGRST202 / P0002 ailleurs = 502', async () => {
+    const cases = [
+      [{ action: 'publish' }, '/rest/v1/rpc/publish_content', json({ code: 'PGRST202', message: 'Could not find the function' }, 404)],
+      [{ action: 'publish' }, '/rest/v1/rpc/publish_content', json({ message: 'nope' }, 404)],
+      [{ action: 'publish' }, '/rest/v1/rpc/publish_content', json({ code: 'P0002', message: 'x' }, 500)],
+      [{ action: 'rebuild' }, '/rest/v1/rpc/is_admin', json({ code: 'PGRST202', message: 'x' }, 404)],
+      [{ action: 'restore', snapshotId: UUID }, '/rest/v1/rpc/restore_snapshot', json({ code: 'PGRST202', message: 'Could not find the function' }, 404)],
+    ]
+    for (const [input, route, result] of cases) {
+      const { response, body, calls } = await run(request(input), { [route]: result, ...hookOk })
+      expect(response.status).toBe(502)
+      expect(body).toEqual({ error: 'upstream' })
+      expect(calls).toHaveLength(1)
+    }
+  })
+
+  it('restore : 404 ou 22P02 sans code PGRST → 422 « introuvable »', async () => {
+    for (const result of [json({ message: 'gone' }, 404), json({ code: '22P02', message: 'invalid input syntax for type uuid' }, 400)]) {
+      const { response, body, calls } = await run(request({ action: 'restore', snapshotId: UUID }), { '/rest/v1/rpc/restore_snapshot': result, ...hookOk })
+      expect(response.status).toBe(422)
+      expect(body.message).toMatch(/introuvable/i)
+      expect(calls).toHaveLength(1)
+    }
+  })
+
+  it('adresses de configuration invalides (hors http/https) : 500 configuration', async () => {
+    for (const env of [{ ...ENV, SUPABASE_URL: 'projet.supabase.test' }, { ...ENV, SUPABASE_URL: 'ftp://x.test' }, { ...ENV, BUILD_HOOK_URL: 'javascript:alert(1)' }, { ...ENV, BUILD_HOOK_URL: 'pas une url' }]) {
+      const { response, body, calls } = await run(request({ action: 'publish' }), {}, env)
+      expect(response.status).toBe(500)
+      expect(body).toEqual({ error: 'configuration' })
+      expect(calls).toHaveLength(0)
+    }
+  })
+
+  it('chaque appel sortant (RPC puis build hook) reçoit un délai de 10 s', async () => {
+    const created = []
+    const spy = vi.spyOn(AbortSignal, 'timeout').mockImplementation(() => {
+      const signal = new AbortController().signal
+      created.push(signal)
+      return signal
+    })
+    try {
+      const { calls } = await run(request({ action: 'publish' }), { '/rest/v1/rpc/publish_content': json(UUID), ...hookOk })
+      expect(spy).toHaveBeenCalledTimes(2)
+      expect(spy.mock.calls).toEqual([[10000], [10000]])
+      expect(calls[0].init.signal).toBe(created[0])
+      expect(calls[1].init.signal).toBe(created[1])
+      expect(calls.every((call) => call.init.signal.aborted === false)).toBe(true)
+    } finally {
+      spy.mockRestore()
+    }
   })
 })

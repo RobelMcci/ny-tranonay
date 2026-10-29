@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { deriveBuildStatus, describeBuildStatus, formatSnapshotDate } from './build-status.js'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { deriveBuildStatus, describeBuildStatus, formatSnapshotDate, startPolling } from './build-status.js'
 
 const CREATED = '2026-10-29T10:00:00.000Z'
 const latest = { id: 'snap-2', created_at: CREATED }
@@ -42,6 +42,26 @@ describe('deriveBuildStatus', () => {
   })
 })
 
+describe('deriveBuildStatus avec buildStartedAt (relance manuelle)', () => {
+  it('le délai de 10 minutes compte depuis la relance si elle est plus récente, `since` garde la date de la version', () => {
+    const restarted = minutes(30).toISOString()
+    const status = deriveBuildStatus({ latest, liveVersion: 'snap-1', now: minutes(35), buildStartedAt: restarted })
+    expect(status).toEqual({ state: 'building', since: new Date(CREATED) })
+    expect(deriveBuildStatus({ latest, liveVersion: 'snap-1', now: minutes(40), buildStartedAt: restarted }).state).toBe('stalled')
+  })
+
+  it('une relance plus ancienne que la version, absente ou invalide est ignorée', () => {
+    expect(deriveBuildStatus({ latest, liveVersion: 'snap-1', now: minutes(11), buildStartedAt: minutes(-5) }).state).toBe('stalled')
+    expect(deriveBuildStatus({ latest, liveVersion: 'snap-1', now: minutes(11), buildStartedAt: null }).state).toBe('stalled')
+    expect(deriveBuildStatus({ latest, liveVersion: 'snap-1', now: minutes(11), buildStartedAt: 'nope' }).state).toBe('stalled')
+  })
+
+  it('« online » et « none » ne dépendent pas de la relance', () => {
+    expect(deriveBuildStatus({ latest, liveVersion: 'snap-2', now: minutes(99), buildStartedAt: minutes(98) }).state).toBe('online')
+    expect(deriveBuildStatus({ latest: null, liveVersion: null, now: minutes(1), buildStartedAt: minutes(1) }).state).toBe('none')
+  })
+})
+
 describe('describeBuildStatus', () => {
   it('décrit chaque état en français', () => {
     expect(describeBuildStatus({ state: 'online', since: null })).toBe('En ligne')
@@ -60,5 +80,94 @@ describe('formatSnapshotDate', () => {
   it('renvoie une chaîne vide pour une date invalide', () => {
     expect(formatSnapshotDate('nope')).toBe('')
     expect(formatSnapshotDate(null)).toBe('')
+  })
+})
+
+describe('startPolling', () => {
+  afterEach(() => vi.useRealTimers())
+
+  /** Faux `document` : `hidden` réglable, écouteurs enregistrés. */
+  const fakeDoc = () => {
+    const listeners = new Set()
+    return {
+      hidden: false,
+      addEventListener: (type, fn) => type === 'visibilitychange' && listeners.add(fn),
+      removeEventListener: (type, fn) => type === 'visibilitychange' && listeners.delete(fn),
+      show() {
+        this.hidden = false
+        for (const fn of [...listeners]) fn()
+      },
+      listeners,
+    }
+  }
+
+  it('vérifie toutes les 10 secondes puis s’arrête', async () => {
+    vi.useFakeTimers()
+    const check = vi.fn(async () => {})
+    const stop = startPolling(check, { doc: fakeDoc() })
+    await vi.advanceTimersByTimeAsync(9_999)
+    expect(check).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1)
+    expect(check).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(20_000)
+    expect(check).toHaveBeenCalledTimes(3)
+    stop()
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(check).toHaveBeenCalledTimes(3)
+  })
+
+  it('ne chevauche jamais deux vérifications : le tick est ignoré tant qu’une est en cours', async () => {
+    vi.useFakeTimers()
+    let release
+    const check = vi.fn(() => new Promise((resolve) => (release = resolve)))
+    startPolling(check, { doc: fakeDoc() })
+    await vi.advanceTimersByTimeAsync(10_000)
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(check).toHaveBeenCalledTimes(1)
+    release()
+    await vi.advanceTimersByTimeAsync(10_000)
+    expect(check).toHaveBeenCalledTimes(2)
+  })
+
+  it('une vérification qui échoue ne bloque pas les suivantes', async () => {
+    vi.useFakeTimers()
+    const check = vi.fn().mockRejectedValueOnce(new Error('x')).mockResolvedValue(undefined)
+    startPolling(check, { doc: fakeDoc() })
+    await vi.advanceTimersByTimeAsync(20_000)
+    expect(check).toHaveBeenCalledTimes(2)
+  })
+
+  it('se met en pause onglet masqué et vérifie aussitôt au retour', async () => {
+    vi.useFakeTimers()
+    const doc = fakeDoc()
+    const check = vi.fn(async () => {})
+    startPolling(check, { doc })
+    doc.hidden = true
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(check).not.toHaveBeenCalled()
+    doc.show()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(check).toHaveBeenCalledTimes(1)
+  })
+
+  it('retire son écouteur à l’arrêt', () => {
+    vi.useFakeTimers()
+    const doc = fakeDoc()
+    const stop = startPolling(async () => {}, { doc })
+    expect(doc.listeners.size).toBe(1)
+    stop()
+    expect(doc.listeners.size).toBe(0)
+  })
+
+  it('ignore le résultat d’une vérification terminée après l’arrêt (le callback décide via `isActive`)', async () => {
+    vi.useFakeTimers()
+    let release
+    const seen = []
+    const stop = startPolling((isActive) => new Promise((resolve) => (release = () => { seen.push(isActive()); resolve() })), { doc: fakeDoc() })
+    await vi.advanceTimersByTimeAsync(10_000)
+    stop()
+    release()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(seen).toEqual([false])
   })
 })

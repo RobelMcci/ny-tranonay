@@ -45,7 +45,7 @@ export default function ConfirmRestore({ label, confirming, busy = false, onAsk,
     if (finished && confirming && (document.activeElement === document.body || document.activeElement === null)) cancelButton.current?.focus()
   }, [busy, confirming])
 
-  const explanation = 'Une nouvelle version sera créée à partir de celle-ci, puis publiée. Rien n’est effacé : les autres versions restent dans l’historique.'
+  const explanation = 'Une nouvelle version sera créée à partir de celle-ci, puis publiée. Rien n’est effacé : les autres versions restent dans l’historique. Vos écrans de modification gardent leurs valeurs actuelles : le prochain « Publier » les remettra en ligne par-dessus cette version.'
 
   return (
     <>

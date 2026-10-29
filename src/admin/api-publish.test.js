@@ -121,6 +121,27 @@ describe('publishContent', () => {
   })
 })
 
+describe('erreurs « refusées » (rien n’a pu être enregistré) ou incertaines', () => {
+  it('401, 403, 422 avec message et absence de session portent `rejected` : l’état de la base n’a pas changé', async () => {
+    state.session = null
+    expect((await failure(api.publishContent())).rejected).toBe(true)
+    state.session = { access_token: TOKEN }
+    for (const response of [answer({ error: 'unauthorized' }, 401), answer({ error: 'forbidden' }, 403), answer({ error: 'rejected', message: 'Cette version est introuvable : rechargez la page.' }, 422)]) {
+      fetchMock.mockResolvedValueOnce(response)
+      expect((await failure(api.publishContent())).rejected).toBe(true)
+    }
+  })
+
+  it('5xx, panne réseau, non-JSON et échec du build hook ne portent PAS `rejected` : la version a pu être enregistrée', async () => {
+    for (const response of [answer({ error: 'upstream' }, 502), answer('<html>Gateway Timeout</html>', 504), answer({ error: 'build_hook_failed', snapshotId: UUID }, 502), answer({ error: 'configuration' }, 500)]) {
+      fetchMock.mockResolvedValueOnce(response)
+      expect((await failure(api.publishContent())).rejected).toBeUndefined()
+    }
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    expect((await failure(api.restoreSnapshot(UUID))).rejected).toBeUndefined()
+  })
+})
+
 describe('restoreSnapshot', () => {
   it('envoie l’identifiant de l’instantané à restaurer', async () => {
     fetchMock.mockResolvedValue(answer({ snapshotId: 'new-id' }))

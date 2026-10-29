@@ -10,7 +10,8 @@ const TIMEOUT_MS = 10_000
 const MAX_LABEL = 60
 const MAX_BODY = 4096
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const BEARER = /^Bearer ([A-Za-z0-9._~+/=-]{1,4096})$/
+// Le schéma d'authentification est insensible à la casse (RFC 7235) ; le jeton n'a ni espace ni saut de ligne.
+const BEARER = /^bearer ([A-Za-z0-9._~+/=-]{1,4096})$/i
 const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]/g
 
 const REJECTED = {
@@ -116,10 +117,13 @@ async function callRpc({ fetchImpl, baseUrl, anonKey, jwt }, name, args) {
   const code = error && typeof error.code === 'string' ? error.code : ''
   const message = error && typeof error.message === 'string' ? error.message : ''
   if (response.status === 401 || response.status === 403 || code === '42501' || /forbidden/i.test(message)) return { kind: 'forbidden' }
-  if (code === 'P0002') return { kind: 'rejected', message: REJECTED.notFound }
-  if (response.status >= 500 || response.status === 408 || response.status === 429) return { kind: 'upstream' }
+  // « Version introuvable » n'a de sens que pour un retour en arrière : P0002 (instantané absent) et 22P02 (identifiant illisible)
+  // viennent de `restore_snapshot`. Un 404 (hors code PGRST*, qui signale une fonction absente, ex. migration manquante) aussi.
+  const isRestore = name === 'restore_snapshot'
+  if (isRestore && (code === 'P0002' || code === '22P02' || (response.status === 404 && !code.startsWith('PGRST')))) return { kind: 'rejected', message: REJECTED.notFound }
+  // Pas de réponse exploitable (panne, délai, limitation de débit, 404 ou P0002 inattendus ailleurs) : côté Supabase.
+  if (response.status >= 500 || response.status === 408 || response.status === 429 || response.status === 404 || code === 'P0002') return { kind: 'upstream' }
   if (/settings missing/i.test(message)) return { kind: 'rejected', message: REJECTED.settings }
-  if (code === '22P02' || response.status === 404) return { kind: 'rejected', message: REJECTED.notFound }
   return { kind: 'rejected', message: REJECTED.other }
 }
 

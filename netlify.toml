@@ -9,6 +9,7 @@
 # (à renseigner dans l'interface Netlify, jamais dans le dépôt) :
 #   SUPABASE_URL, SUPABASE_ANON_KEY  adresse et clé anonyme du projet Supabase ;
 #   BUILD_HOOK_URL                   adresse secrète du « build hook » qui relance la construction du site.
+# Ce dossier ne contient que des fonctions (chaque fichier est déployé) : leurs tests sont dans netlify/tests.
 [functions]
   directory = "netlify/functions"
 

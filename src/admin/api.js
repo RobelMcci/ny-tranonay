@@ -453,17 +453,26 @@ const UNAVAILABLE = 'La publication n’est disponible que sur le site en ligne 
 const BUILD_HOOK_FAILED = 'La version est enregistrée, mais le lancement de la construction du site a échoué : relancez la construction.'
 const REBUILD_FAILED = 'Le lancement de la construction du site a échoué : réessayez.'
 
+/** Erreur de refus net : rien n'a été enregistré. */
+function rejection(message) {
+  const error = new Error(message)
+  error.rejected = true
+  return error
+}
+
 /**
  * Appelle la fonction Netlify de publication avec le jeton de la session (jamais affiché ni copié ailleurs).
  * Toute erreur est en français ; un échec du lancement de la construction porte `code = 'build_hook_failed'`
- * et, quand une version a été enregistrée, son `snapshotId`.
+ * et, quand une version a été enregistrée, son `snapshotId`. Une erreur portant `rejected = true` est un refus net
+ * (session, droits, demande refusée) : rien n'a été enregistré. Toute autre erreur est incertaine (la version a pu être
+ * enregistrée alors que la réponse s'est perdue) : l'écran doit se relire.
  * @param {{ action: 'publish', label?: string } | { action: 'restore', snapshotId: string } | { action: 'rebuild' }} payload
  * @returns {Promise<object>} Corps JSON de la réponse (`{ snapshotId }` ou `{ ok: true }`).
  */
 async function callPublishFunction(payload) {
   const { data } = await getSupabase().auth.getSession()
   const token = data?.session?.access_token
-  if (!token) throw new Error(SESSION_EXPIRED)
+  if (!token) throw rejection(SESSION_EXPIRED)
 
   let response
   try {
@@ -488,9 +497,9 @@ async function callPublishFunction(payload) {
     throw new Error(UNAVAILABLE)
   }
 
-  if (response.status === 401) throw new Error(SESSION_EXPIRED)
-  if (response.status === 403) throw new Error('Vous n’avez pas les droits nécessaires.')
-  if (response.status === 422 && typeof body?.message === 'string' && body.message) throw new Error(body.message)
+  if (response.status === 401) throw rejection(SESSION_EXPIRED)
+  if (response.status === 403) throw rejection('Vous n’avez pas les droits nécessaires.')
+  if (response.status === 422 && typeof body?.message === 'string' && body.message) throw rejection(body.message)
   if (body?.error === 'build_hook_failed') {
     const error = new Error(payload.action === 'rebuild' ? REBUILD_FAILED : BUILD_HOOK_FAILED)
     error.code = 'build_hook_failed'

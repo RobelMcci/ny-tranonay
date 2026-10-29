@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchBuildVersion, fetchDraft, fetchHistory, fetchPublished, publishContent, rebuildSite, restoreSnapshot } from '../api.js'
-import { deriveBuildStatus, describeBuildStatus, formatSnapshotDate } from '../build-status.js'
+import { deriveBuildStatus, describeBuildStatus, formatSnapshotDate, startPolling } from '../build-status.js'
 import ConfirmRestore from '../components/ConfirmRestore.jsx'
 import Field from '../components/Field.jsx'
 import { diffContent, groupChanges } from '../diff.js'
 
 const focusRing = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C2410C]'
 const MAX_LABEL = 60
-const POLL_MS = 10_000
 
 const KIND = {
   added: { text: 'Ajouté', className: 'bg-emerald-50 text-emerald-900 ring-emerald-300' },
@@ -154,34 +153,32 @@ export function Component() {
   const changes = load.status === 'ready' ? diffContent(published?.payload ?? null, draft) : []
   const latest = history[0] ?? published
   const status = deriveBuildStatus({
-    latest: latest ? { id: latest.id, created_at: rebuiltAt && Date.parse(rebuiltAt) > Date.parse(latest.created_at) ? rebuiltAt : latest.created_at } : null,
+    latest: latest ? { id: latest.id, created_at: latest.created_at } : null,
     liveVersion,
     now,
+    buildStartedAt: rebuiltAt,
   })
   const waiting = load.status === 'ready' && (status.state === 'building' || status.state === 'stalled')
 
   // Le suivi s'arrête dès que la version en ligne est la dernière ; il se relance tout seul après un rechargement.
+  // Une seule vérification à la fois, en pause quand l'onglet est masqué (voir `startPolling`).
   useEffect(() => {
     if (!waiting) return
-    let cancelled = false
-    const id = setInterval(async () => {
+    return startPolling(async (isActive) => {
       const version = await fetchBuildVersion()
-      if (cancelled) return
+      if (!isActive()) return
       setLiveVersion(version)
       setNow(new Date())
-    }, POLL_MS)
-    return () => {
-      cancelled = true
-      clearInterval(id)
-    }
+    })
   }, [waiting])
 
-  // Après un enregistrement de version : on relit tout. Un échec de cette relecture n'annule rien (la version est enregistrée).
-  const refreshAfterSave = async () => {
+  // Après un enregistrement de version (ou une réponse incertaine) : on relit tout. Un échec de cette relecture n'annule rien.
+  // `quiet` : l'erreur déjà affichée reste le message principal.
+  const refreshAfterSave = async ({ quiet = false } = {}) => {
     try {
       apply(await loadAll())
     } catch {
-      setProblem({ message: 'La version est enregistrée, mais l’écran n’a pas pu être actualisé : rechargez la page.' })
+      if (!quiet) setProblem({ message: 'La version est enregistrée, mais l’écran n’a pas pu être actualisé : rechargez la page.' })
     }
   }
 
@@ -204,10 +201,9 @@ export function Component() {
       await refreshAfterSave()
     } catch (error) {
       setProblem({ message: error.message, canRebuild: error.code === 'build_hook_failed' })
-      if (error.snapshotId) {
-        setLabel('')
-        await refreshAfterSave()
-      }
+      if (error.snapshotId) setLabel('')
+      // Sauf refus net, la version a pu être enregistrée alors que la réponse s'est perdue : l'écran doit refléter la réalité.
+      if (!error.rejected) await refreshAfterSave({ quiet: true })
     } finally {
       inFlight.current = false
       setSending(false)
@@ -227,9 +223,9 @@ export function Component() {
       await refreshAfterSave()
     } catch (error) {
       setProblem({ message: error.message, canRebuild: error.code === 'build_hook_failed' })
-      if (error.snapshotId) {
+      if (!error.rejected) {
         setConfirming(null)
-        await refreshAfterSave()
+        await refreshAfterSave({ quiet: true })
       }
     } finally {
       inFlight.current = false
