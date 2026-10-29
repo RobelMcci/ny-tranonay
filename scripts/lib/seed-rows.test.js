@@ -74,7 +74,13 @@ describe('seedRows', () => {
       description: seed.pages[0].description,
       priority: seed.pages[0].priority,
       nav_label: seed.pages[0].navLabel,
+      position: 0,
     })
+  })
+
+  it('donne aux pages les positions 0…n-1 dans l’ordre du seed (ordre du menu)', () => {
+    expect(rows.pages_seo.map((row) => row.path)).toEqual(seed.pages.map((page) => page.path))
+    expect(isSequence(rows.pages_seo)).toBe(true)
   })
 
   it('produit les photos du seed : fichier renseigné, storage_path nul, visibles', () => {

@@ -261,18 +261,19 @@ export async function saveFaqOrder(ids) {
 }
 
 /**
- * Référencement de toutes les pages, de la plus prioritaire à la moins prioritaire.
+ * Référencement de toutes les pages, dans l'ordre du site (menu, plan du site) : `position` puis chemin.
+ * La position n'est ni lue ni modifiée ici : elle est fixée par l'import du contenu initial.
  * @returns {Promise<import('./pages-map.js').PageSeo[]>}
  */
 export async function loadPagesSeo() {
-  const { data, error } = await getSupabase().from('pages_seo').select('path, title, description, priority, nav_label').order('priority', { ascending: false }).order('path')
+  const { data, error } = await getSupabase().from('pages_seo').select('path, title, description, priority, nav_label').order('position').order('path')
   if (error) throw failureFr('Impossible de charger le référencement.', error)
   return (data ?? []).map(pageFromRow)
 }
 
 /**
  * Met à jour une page existante (le chemin identifie la page). Ne crée ni ne supprime jamais de page :
- * l'ensemble des pages est fixé par le code du site.
+ * l'ensemble des pages est fixé par le code du site. Ne touche jamais à `position` (absente de `pageToRow`).
  * @param {import('./pages-map.js').PageSeo} page
  * @returns {Promise<import('./pages-map.js').PageSeo>} La page enregistrée.
  */

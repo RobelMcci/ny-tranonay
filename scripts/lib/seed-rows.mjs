@@ -17,7 +17,8 @@ export function seedRows(content) {
     prices: content.prices.map(({ key, label, amount, unit }) => ({ key, label, amount, unit })),
     photos: content.photos.map((photo) => photoToRow({ ...photo, visible: true })),
     rooms: content.rooms.map((room, position) => roomToRow({ ...room, position, visible: true })),
-    pages_seo: content.pages.map((page) => pageToRow(page)),
+    // `position` (ordre du menu et du plan du site) = ordre du seed ; jamais modifiée ensuite par le tableau de bord.
+    pages_seo: content.pages.map((page, position) => ({ ...pageToRow(page), position })),
     list_items: Object.entries(content.lists).flatMap(([listKey, labels]) =>
       labels.map((label, position) => ({ list_key: listKey, label, position, visible: true })),
     ),

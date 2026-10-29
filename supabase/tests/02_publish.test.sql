@@ -232,7 +232,7 @@ select is(
 select is(
   (select array(select e->>'path' from jsonb_array_elements(j->'pages') e) from ctx where k = 'd'),
   array['/', '/a-propos/', '/contact/'],
-  'pages : priorité décroissante puis chemin'
+  'pages : position (0 pour toutes ici) puis chemin'
 );
 select is(
   pg_temp.keys_of((select j#>'{pages,0}' from ctx where k = 'd')),

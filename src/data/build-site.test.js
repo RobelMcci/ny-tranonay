@@ -51,6 +51,22 @@ describe('buildSite(seed) reproduit le site historique', () => {
   })
 })
 
+describe('ordre des pages (menu et pied de page)', () => {
+  it('l’ordre du menu de buildSite(seed) est celui du seed, donc celui du site historique', () => {
+    const navOrder = (pages) => pages.filter((page) => page.nav).map((page) => page.path)
+    expect(navOrder(buildSite(seed).pages)).toEqual(seed.pages.filter((page) => page.navLabel).map((page) => page.path))
+    expect(navOrder(buildSite(seed).pages)).toEqual(navOrder(legacy.pages))
+  })
+
+  it('garde l’ordre reçu (position en base) sans jamais trier par priorité', () => {
+    const content = clone(seed)
+    content.pages.forEach((page, index) => {
+      page.priority = Math.round((index / 10) * 10) / 10
+    })
+    expect(buildSite(content).pages.map((page) => page.path)).toEqual(seed.pages.map((page) => page.path))
+  })
+})
+
 describe('buildSite avec un contenu modifié', () => {
   it('un prix de réception modifié se propage à prices et à la FAQ', () => {
     const content = clone(seed)
