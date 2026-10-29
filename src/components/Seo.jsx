@@ -1,5 +1,6 @@
 import { Head } from 'vite-react-ssg'
 import { absoluteUrl, business, pageByPath } from '../data/site.js'
+import { safeJsonLd } from '../lib/json-ld.js'
 import { breadcrumbSchema, graph, ogImage } from '../lib/schema.js'
 
 /** Balises <head> d'une page : titre, description, canonical, Open Graph, JSON-LD. */
@@ -33,7 +34,8 @@ export default function Seo({ path, nodes = [], noindex = false }) {
       <meta name="twitter:description" content={page.description} />
       <meta name="twitter:image" content={ogImage} />
 
-      {!noindex && <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>}
+      {/* Échappé : le contenu vient de la base et react-helmet-async écrit le script tel quel. */}
+      {!noindex && <script type="application/ld+json">{safeJsonLd(jsonLd)}</script>}
     </Head>
   )
 }
