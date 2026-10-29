@@ -1,5 +1,7 @@
 // Accès aux données du tableau de bord (liste plate de petites fonctions asynchrones).
 // Ne doit être importé que depuis `src/admin/**`.
+import { faqFromRow } from './faqs-map.js'
+import { pageFromRow, pageToRow } from './pages-map.js'
 import { roomFromRow, roomToRow } from './rooms-map.js'
 import { settingsFromRow, settingsToRow } from './settings-map.js'
 import { getSupabase } from './supabase.js'
@@ -203,4 +205,80 @@ export async function saveListOrder(ids) {
     throw new Error('Impossible d’enregistrer l’ordre de la liste : un élément est introuvable ou vous n’avez pas les droits nécessaires.')
   }
   if (error) throw failureFr('Impossible d’enregistrer l’ordre de la liste.', error)
+}
+
+const FAQ_COLUMNS = 'id, question, answer, position, visible'
+
+/**
+ * Toutes les questions de la FAQ du brouillon, visibles ou non, dans l'ordre d'affichage.
+ * @returns {Promise<import('./faqs-map.js').Faq[]>}
+ */
+export async function loadFaqs() {
+  const { data, error } = await getSupabase().from('faqs').select(FAQ_COLUMNS).order('position').order('id')
+  if (error) throw failureFr('Impossible de charger la FAQ.', error)
+  return (data ?? []).map(faqFromRow)
+}
+
+/**
+ * Ajoute une question (sans `id`) ou met à jour une question existante.
+ * La mise à jour ne touche jamais à `position` : l'ordre n'est changé que par `saveFaqOrder`.
+ * @param {import('./faqs-map.js').Faq} faq
+ * @returns {Promise<import('./faqs-map.js').Faq>} La question enregistrée.
+ */
+export async function saveFaq(faq) {
+  const table = getSupabase().from('faqs')
+  const action = `Impossible d’enregistrer la question « ${faq.question} ».`
+  const { data, error } =
+    faq.id == null
+      ? await table.insert({ question: faq.question, answer: faq.answer, position: faq.position, visible: faq.visible }).select(FAQ_COLUMNS)
+      : await table.update({ question: faq.question, answer: faq.answer, visible: faq.visible }).eq('id', faq.id).select(FAQ_COLUMNS)
+  if (error) throw failureFr(action, error)
+  if (!data?.length) throw new Error(`${action} Question introuvable ou vous n’avez pas les droits nécessaires.`)
+  return faqFromRow(data[0])
+}
+
+/** @param {number} id */
+export async function deleteFaq(id) {
+  const { data, error } = await getSupabase().from('faqs').delete().eq('id', id).select('id')
+  if (error) throw failureFr('Impossible de supprimer la question.', error)
+  if (!data?.length) throw new Error('Impossible de supprimer la question : elle est introuvable ou vous n’avez pas les droits nécessaires.')
+}
+
+/**
+ * Enregistre l'ordre de la FAQ en UNE instruction SQL (fonction `reorder_faqs`) : tout ou rien.
+ * La position de chaque identifiant devient son indice.
+ * @param {number[]} ids
+ */
+export async function saveFaqOrder(ids) {
+  if (ids.length === 0) return
+  const { error } = await getSupabase().rpc('reorder_faqs', { ids })
+  if (error?.code === 'P0002') {
+    throw new Error('Impossible d’enregistrer l’ordre de la FAQ : une question est introuvable ou vous n’avez pas les droits nécessaires.')
+  }
+  if (error) throw failureFr('Impossible d’enregistrer l’ordre de la FAQ.', error)
+}
+
+/**
+ * Référencement de toutes les pages, de la plus prioritaire à la moins prioritaire.
+ * @returns {Promise<import('./pages-map.js').PageSeo[]>}
+ */
+export async function loadPagesSeo() {
+  const { data, error } = await getSupabase().from('pages_seo').select('path, title, description, priority, nav_label').order('priority', { ascending: false }).order('path')
+  if (error) throw failureFr('Impossible de charger le référencement.', error)
+  return (data ?? []).map(pageFromRow)
+}
+
+/**
+ * Met à jour une page existante (le chemin identifie la page). Ne crée ni ne supprime jamais de page :
+ * l'ensemble des pages est fixé par le code du site.
+ * @param {import('./pages-map.js').PageSeo} page
+ * @returns {Promise<import('./pages-map.js').PageSeo>} La page enregistrée.
+ */
+export async function savePageSeo(page) {
+  const action = `Impossible d’enregistrer le référencement de la page « ${page.path} ».`
+  const { path, ...changes } = pageToRow(page)
+  const { data, error } = await getSupabase().from('pages_seo').update(changes).eq('path', path).select('path, title, description, priority, nav_label')
+  if (error) throw failureFr(action, error)
+  if (!data?.length) throw new Error(`${action} Page introuvable ou vous n’avez pas les droits nécessaires.`)
+  return pageFromRow(data[0])
 }

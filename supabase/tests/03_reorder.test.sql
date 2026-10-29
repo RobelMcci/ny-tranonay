@@ -1,7 +1,7 @@
 -- Réordonnancement atomique des éléments de liste.
 begin;
 
-select plan(6);
+select plan(7);
 
 insert into auth.users (id, email) values
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'admin@test.local'),
@@ -31,6 +31,11 @@ select is(
 select set_config('request.jwt.claims', '{"sub":"cccccccc-cccc-cccc-cccc-cccccccccccc","role":"authenticated"}', true);
 select throws_ok(
   $$select reorder_list_items(array[9001, 9002, 9003]::bigint[])$$, 'P0002', null, 'un non-administrateur ne modifie rien (RLS)'
+);
+
+set local role anon;
+select throws_ok(
+  $$select reorder_list_items(array[9001, 9002, 9003]::bigint[])$$, '42501', null, 'le rôle anonyme n’a pas le droit d’exécuter la fonction'
 );
 
 select * from finish();

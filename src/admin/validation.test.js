@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { parseAmount, parseCount, validateCoordinates, validateEmail, validatePhone, validateUrl } from './validation.js'
+import seed from '../data/content.seed.json'
+import { buildVars } from '../lib/interpolate.js'
+import { checkTokens, parseAmount, parseCount, seoPreview, validateCoordinates, validateEmail, validatePhone, validateUrl } from './validation.js'
 
 describe('parseAmount', () => {
   it.each([
@@ -125,5 +127,120 @@ describe('validateCoordinates', () => {
     expect(validateCoordinates('abc', 0)).toBeTruthy()
     expect(validateCoordinates('', '')).toBeTruthy()
     expect(validateCoordinates(NaN, 0)).toBeTruthy()
+  })
+})
+
+describe('seoPreview', () => {
+  const chars = (n, c = 'a') => c.repeat(n)
+
+  it('titre de 80 caractères : « long » et aperçu coupé avec …, sans dépasser 60', () => {
+    const title = Array.from({ length: 16 }, () => 'mots5').join(' ') // 16 × 5 + 15 espaces = 95 ; on prend 80 :
+    const eighty = title.slice(0, 80)
+    const result = seoPreview(eighty, 'x')
+    expect(result.titleStatus).toBe('long')
+    expect(result.titleLength).toBe(80)
+    expect(result.title.endsWith('…')).toBe(true)
+    expect(Array.from(result.title).length).toBeLessThanOrEqual(60)
+  })
+
+  it('coupe sur une limite de mot quand c’est possible', () => {
+    const title = `${chars(50)} ${chars(30, 'b')}`
+    expect(seoPreview(title, '').title).toBe(`${chars(50)}…`)
+  })
+
+  it('coupe net quand il n’y a aucun espace, sans dépasser la limite avec le …', () => {
+    const result = seoPreview(chars(80), '')
+    expect(result.title).toBe(`${chars(59)}…`)
+    expect(Array.from(result.title)).toHaveLength(60)
+  })
+
+  it('description vide : « empty » ; blanc seulement : « empty »', () => {
+    expect(seoPreview('T', '').descriptionStatus).toBe('empty')
+    expect(seoPreview('T', ' \n\t ').descriptionStatus).toBe('empty')
+    expect(seoPreview(' \t ', 'x').titleStatus).toBe('empty')
+    expect(seoPreview('  ', 'x').titleLength).toBe(0)
+  })
+
+  it('exactement 60 / 160 caractères : « ok », sans …', () => {
+    const result = seoPreview(chars(60), chars(160))
+    expect(result.titleStatus).toBe('ok')
+    expect(result.descriptionStatus).toBe('ok')
+    expect(result.title).toBe(chars(60))
+    expect(result.description).toBe(chars(160))
+  })
+
+  it('61 / 161 caractères : « long », avec …', () => {
+    const result = seoPreview(chars(61), chars(161))
+    expect(result.titleStatus).toBe('long')
+    expect(result.descriptionStatus).toBe('long')
+    expect(result.title.endsWith('…')).toBe(true)
+    expect(result.description.endsWith('…')).toBe(true)
+    expect(Array.from(result.description).length).toBeLessThanOrEqual(160)
+  })
+
+  it('description de 69 caractères : « short » ; 70 : « ok »', () => {
+    expect(seoPreview('T', chars(69)).descriptionStatus).toBe('short')
+    expect(seoPreview('T', chars(70)).descriptionStatus).toBe('ok')
+  })
+
+  it('compte les points de code : accents et émojis', () => {
+    const result = seoPreview(chars(59, 'é') + '😀', 'x')
+    expect(result.titleLength).toBe(60)
+    expect(result.titleStatus).toBe('ok')
+    const long = seoPreview(chars(59, 'é') + '😀😀', 'x')
+    expect(long.titleStatus).toBe('long')
+    expect(long.title.endsWith('…')).toBe(true)
+    // Aucune moitié de paire de substitution.
+    expect(long.title).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/)
+    expect(Array.from(long.title).length).toBeLessThanOrEqual(60)
+  })
+
+  it('longueurs calculées sur la saisie nettoyée (espaces de bord retirés)', () => {
+    const result = seoPreview(`  ${chars(10)}  `, `\n${chars(100)} `)
+    expect(result.titleLength).toBe(10)
+    expect(result.descriptionLength).toBe(100)
+    expect(result.title).toBe(chars(10))
+  })
+
+  it('accepte des valeurs non textuelles sans lever d’erreur', () => {
+    expect(seoPreview(undefined, null)).toMatchObject({ title: '', description: '', titleStatus: 'empty', descriptionStatus: 'empty' })
+  })
+})
+
+describe('checkTokens', () => {
+  const vars = buildVars(seed)
+
+  it('nomme une variable inconnue', () => {
+    const message = checkTokens(['Prix {{prix.recption}}'], vars)
+    expect(message).toContain('prix.recption')
+    expect(message).toContain('Insérer une variable')
+  })
+
+  it('accepte une variable connue ou aucun jeton', () => {
+    expect(checkTokens(['{{prix.reception_jour}}'], vars)).toBeNull()
+    expect(checkTokens(['Pas de variable ici', '{ simple }', 'ouvert {{ non fermé'], vars)).toBeNull()
+    expect(checkTokens([], vars)).toBeNull()
+  })
+
+  it('nomme chaque variable inconnue une seule fois, tous textes confondus', () => {
+    const message = checkTokens(['{{a.b}} et {{c.d}}', 'encore {{a.b}}'], vars)
+    expect(message.split('{{a.b}}')).toHaveLength(2)
+    expect(message).toContain('{{c.d}}')
+    expect(message).toContain('Variables inconnues')
+  })
+
+  it('un seul nom : forme singulière', () => {
+    expect(checkTokens(['{{x}}'], vars)).toMatch(/^Variable inconnue/)
+  })
+
+  it('signale les jetons mal formés', () => {
+    expect(checkTokens(['{{Prix.x}}'], vars)).toContain('Prix.x')
+    expect(checkTokens(['{{}}'], vars)).not.toBeNull()
+    expect(checkTokens(['{{ }}'], vars)).not.toBeNull()
+  })
+
+  it('ignore les entrées qui ne sont pas du texte', () => {
+    expect(checkTokens([null, undefined, 42, {}, 'Prix {{prix.reception_jour}}'], vars)).toBeNull()
+    expect(checkTokens([null, '{{zzz}}'], vars)).toContain('zzz')
   })
 })

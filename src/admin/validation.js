@@ -1,5 +1,6 @@
 // Validation de saisie du tableau de bord (fonctions pures, sans accès réseau).
 // Les erreurs sont des messages courts en français, affichés tels quels à côté du champ.
+import { unknownTokens } from '../lib/interpolate.js'
 
 const MAX_AMOUNT = 100_000_000
 const MAX_COUNT = 1_000_000
@@ -117,3 +118,72 @@ export function validateCoordinates(lat, lng) {
 
 /** Conversion décimale partagée avec les formulaires (latitude, longitude). */
 export { toDecimal }
+
+export const TITLE_LIMIT = 60
+export const DESCRIPTION_LIMIT = 160
+export const DESCRIPTION_MIN = 70
+
+const trimmed = (value) => (typeof value === 'string' ? value.trim() : '')
+
+/** Coupe à `limit` points de code, « … » compris, de préférence entre deux mots. */
+function cut(text, limit) {
+  const chars = Array.from(text)
+  if (chars.length <= limit) return text
+  const head = chars.slice(0, limit - 1)
+  let end = head.length
+  if (!/\s/.test(chars[limit - 1])) {
+    const space = head.findLastIndex((char) => /\s/.test(char))
+    if (space > limit / 2) end = space
+  }
+  return `${head.slice(0, end).join('').trimEnd()}…`
+}
+
+/**
+ * Aperçu d'un résultat Google : titre coupé à 60 caractères et description à 160 (avec « … »),
+ * longueurs de la saisie nettoyée (en points de code : accents et émojis comptent pour un) et état de chacun.
+ * @param {string} title
+ * @param {string} description
+ * @returns {{ title: string, description: string, titleLength: number, descriptionLength: number,
+ *             titleStatus: 'ok' | 'long' | 'empty', descriptionStatus: 'ok' | 'long' | 'short' | 'empty' }}
+ */
+export function seoPreview(title, description) {
+  const titleText = trimmed(title)
+  const descriptionText = trimmed(description)
+  const titleLength = Array.from(titleText).length
+  const descriptionLength = Array.from(descriptionText).length
+
+  let titleStatus = 'ok'
+  if (titleLength === 0) titleStatus = 'empty'
+  else if (titleLength > TITLE_LIMIT) titleStatus = 'long'
+
+  let descriptionStatus = 'ok'
+  if (descriptionLength === 0) descriptionStatus = 'empty'
+  else if (descriptionLength > DESCRIPTION_LIMIT) descriptionStatus = 'long'
+  else if (descriptionLength < DESCRIPTION_MIN) descriptionStatus = 'short'
+
+  return {
+    title: cut(titleText, TITLE_LIMIT),
+    description: cut(descriptionText, DESCRIPTION_LIMIT),
+    titleLength,
+    descriptionLength,
+    titleStatus,
+    descriptionStatus,
+  }
+}
+
+/**
+ * Variables `{{…}}` inconnues dans des textes (les entrées qui ne sont pas du texte sont ignorées).
+ * @param {unknown[]} texts
+ * @param {Record<string, string>} vars Variables disponibles (voir `buildVars`).
+ * @returns {string | null} Message en français nommant chaque variable inconnue une fois, ou `null`.
+ */
+export function checkTokens(texts, vars) {
+  const unknown = []
+  for (const text of texts) {
+    if (typeof text !== 'string') continue
+    for (const name of unknownTokens(text, vars)) if (!unknown.includes(name)) unknown.push(name)
+  }
+  if (unknown.length === 0) return null
+  const names = unknown.map((name) => `{{${name}}}`).join(', ')
+  return `${unknown.length === 1 ? 'Variable inconnue' : 'Variables inconnues'} : ${names}. Utilisez le bouton « Insérer une variable ».`
+}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { deleteListItem, loadListItems, saveListItem, saveListOrder } from '../api.js'
+import ConfirmRemove from '../components/ConfirmRemove.jsx'
 import OrderableList from '../components/OrderableList.jsx'
 import { LIST_KEYS, LIST_LABELS } from '../list-keys.js'
 import { withPositions } from '../reorder.js'
@@ -7,7 +8,6 @@ import { useUnsavedWarning } from '../useUnsavedWarning.js'
 
 const focusRing = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C2410C]'
 const MAX_LABEL = 120
-const CONFIRM_DELAY_MS = 400
 
 /** @returns {string | null} Message d'erreur, ou `null` si le texte est valide. */
 function validateLabel(text) {
@@ -73,37 +73,7 @@ function ListItem({ row, index, listLabel, draft, error, busy, confirming, onDra
             Visible sur le site<span className="sr-only"> : « {row.label} »</span>
           </span>
         </label>
-        {confirming ? (
-          <span className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              id={`liste-annuler-${row.id}`}
-              onClick={onCancelRemove}
-              disabled={busy}
-              className={`touch-target rounded-full border border-slate-400 bg-white px-4 text-sm font-semibold text-[#2B211B] hover:bg-slate-50 ${focusRing}`}
-            >
-              Annuler<span className="sr-only"> la suppression de « {row.label} »</span>
-            </button>
-            <button
-              type="button"
-              onClick={onRemove}
-              disabled={busy}
-              className={`touch-target rounded-full bg-red-800 px-4 text-sm font-semibold text-white hover:bg-red-900 disabled:opacity-60 ${focusRing}`}
-            >
-              Confirmer la suppression<span className="sr-only"> de « {row.label} »</span>
-            </button>
-          </span>
-        ) : (
-          <button
-            type="button"
-            id={`liste-retirer-${row.id}`}
-            onClick={onAskRemove}
-            disabled={busy}
-            className={`touch-target rounded-full px-3 text-sm font-semibold text-red-800 underline underline-offset-2 disabled:opacity-60 ${focusRing}`}
-          >
-            Retirer<span className="sr-only"> « {row.label} » de la liste</span>
-          </button>
-        )}
+        <ConfirmRemove label={row.label} from="de la liste" confirming={confirming} busy={busy} onAsk={onAskRemove} onCancel={onCancelRemove} onConfirm={onRemove} />
       </div>
     </div>
   )
@@ -129,7 +99,6 @@ export function Component() {
   const confirmedOrder = useRef({})
   const orderQueue = useRef(Promise.resolve())
   const orderToken = useRef({})
-  const confirmOpenedAt = useRef(0)
 
   useEffect(() => {
     let cancelled = false
@@ -218,22 +187,8 @@ export function Component() {
     }
   }
 
-  // Étape de confirmation : le focus va sur « Annuler » (choix sûr) et la question est annoncée.
-  const askRemove = (row) => {
-    confirmOpenedAt.current = Date.now()
-    setConfirming(row.id)
-    setAnnouncement(`Confirmer la suppression de « ${row.label} » ?`)
-    focusAfterRender(`liste-annuler-${row.id}`)
-  }
-
-  const cancelRemove = (row) => {
-    setConfirming(null)
-    focusAfterRender(`liste-retirer-${row.id}`)
-  }
-
+  // Étape de confirmation (focus, annonce et garde anti-double clic : voir `ConfirmRemove`).
   const removeRow = async (row) => {
-    // Garde contre une double activation (double clic ou double toucher) à l'ouverture de la confirmation.
-    if (Date.now() - confirmOpenedAt.current < CONFIRM_DELAY_MS) return
     setListError(row.list_key, null)
     setBusyFor(row.id, true)
     try {
@@ -379,8 +334,8 @@ export function Component() {
                             setItemErrors((e) => ({ ...e, [row.id]: undefined }))
                           }}
                           onToggleVisible={() => toggleVisible(row)}
-                          onAskRemove={() => askRemove(row)}
-                          onCancelRemove={() => cancelRemove(row)}
+                          onAskRemove={() => setConfirming(row.id)}
+                          onCancelRemove={() => setConfirming(null)}
                           onRemove={() => removeRow(row)}
                         />
                       )}
