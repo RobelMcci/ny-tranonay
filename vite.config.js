@@ -26,7 +26,7 @@ ${urls}
 
 const buildRobots = () => `User-agent: *
 Allow: /
-Disallow: /admin/
+Disallow: /admin
 
 Sitemap: ${SITE_URL}/sitemap.xml
 `

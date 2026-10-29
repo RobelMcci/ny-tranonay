@@ -49,7 +49,10 @@ npm run icons      # régénère le logo (icon.svg) et les icônes PNG
 | L'adresse du site (`SITE_URL`) | `src/data/site.js` (jamais en base ; voir plus bas) |
 
 Les photos d'origine sont dans `src/assets/` (`imageNN.jpg`) ; les photos téléversées depuis le tableau de bord sont stockées dans
-Supabase Storage et téléchargées dans `src/assets/cms/` à chaque build (dossier généré, non versionné). Les sources non utilisées
+Supabase Storage et téléchargées dans `src/assets/cms/` à chaque build (dossier généré, non versionné). Supprimer une photo dans le
+tableau de bord la retire du site au prochain « Publier », mais **son fichier reste dans le Storage** : les versions déjà publiées
+peuvent y renvoyer, et « Revenir à cette version » en a besoin. Une photo dont le fichier ne peut pas être téléchargé au build est
+retirée de cette construction (avertissement dans les journaux), la photo par défaut de l'emplacement la remplace. Les sources non utilisées
 vivent dans `assets-source/` (hors build).
 
 ### Quand le nom de domaine sera acheté
@@ -75,7 +78,8 @@ Voir aussi `docs/guide-referencement.md` (Google, Facebook, avis) et la spec `do
 Une interface en français, réservée aux administrateurs, pour modifier le contenu du site sans toucher au code : informations et
 horaires, tarifs, chambres, listes, FAQ, référencement (titres et descriptions Google), photos et textes des pages. On modifie, on
 vérifie la liste des changements, puis on clique sur **Publier** : le site est reconstruit par Netlify et en ligne en 1 à 2 minutes.
-La page `/admin` n'est pas indexée (`noindex`, absente du sitemap, `Disallow: /admin/` dans `robots.txt`) et son code n'est chargé que
+La page `/admin` n'est pas indexée (`noindex`, absente du sitemap, `Disallow: /admin` dans `robots.txt`, qui couvre `/admin` et
+`/admin/…`) et son code n'est chargé que
 sur ces pages : les pages publiques n'embarquent jamais le client Supabase.
 
 ### Mise en place (une seule fois)
@@ -99,7 +103,8 @@ sur ces pages : les pages publiques n'embarquent jamais le client Supabase.
    | `BUILD_HOOK_URL` | adresse du build hook (**secrète**) | la fonction de publication s'en sert pour lancer le build |
 
    Les quatre premières sont publiques par nature (la sécurité repose sur les règles d'accès de la base). **Ne jamais mettre la clé
-   `service_role` dans Netlify**, ni dans le code, ni dans un fichier versionné.
+   `service_role` dans Netlify**, ni dans le code, ni dans un fichier versionné. Ne pas définir `CONTENT_ALLOW_SEED_FALLBACK` en temps
+   normal (échappatoire, voir « Si Supabase est indisponible »).
 4. **Créer le build hook Netlify** : *Site configuration → Build & deploy → Build hooks → Add build hook* (branche de production),
    puis copier l'adresse obtenue dans `BUILD_HOOK_URL`. Toute personne qui connaît cette adresse peut relancer un build : la garder secrète.
 5. **Créer l'administrateur** : dans Supabase → *Authentication → Users → Add user → Create new user* (e-mail et mot de passe, cocher
@@ -111,19 +116,30 @@ sur ces pages : les pages publiques n'embarquent jamais le client Supabase.
    pas autorisé. ») et la base lui interdit toute écriture.
 6. **Autoriser la redirection du mot de passe oublié** : Supabase → *Authentication → URL configuration* → *Redirect URLs* : ajouter
    `https://<adresse du site>/admin/connexion` (et l'adresse du site comme *Site URL*).
-7. **Importer le contenu initial** (section suivante), puis redéployer le site une fois (*Deploys → Trigger deploy*) pour que le build lise
+7. **Fermer les inscriptions publiques** : Supabase → *Authentication → Sign In / Providers* → décocher *Allow new users to sign
+   up*. Le tableau de bord n'en a pas besoin (l'administrateur est créé à la main, étape 5, ce qui reste possible inscriptions fermées) ;
+   ouvertes, elles permettraient à n'importe qui de créer des comptes (sans aucun droit sur le contenu, mais en consommant le quota
+   d'e-mails du projet). À rouvrir seulement en phase 3 (comptes clients).
+8. **Importer le contenu initial** (section suivante), puis redéployer le site une fois (*Deploys → Trigger deploy*) pour que le build lise
    la base.
 
-> **E-mails sans domaine propre.** Tant que le site n'a pas de domaine, l'envoi d'e-mails de Supabase (mot de passe oublié) passe par son
-> service intégré, très limité (quelques e-mails par heure) : le message peut tarder ou ne pas arriver. Deux solutions : configurer un
-> SMTP personnalisé (*Authentication → SMTP Settings*) ou définir directement un mot de passe dans *Authentication → Users*
-> (menu de l'utilisateur → *Send password recovery* / modifier le mot de passe).
+> **Mot de passe oublié et e-mails.** « Mot de passe oublié ? » envoie un e-mail. Sans configuration, Supabase utilise son service
+> d'envoi intégré, prévu pour les essais : très peu d'e-mails par heure et, par défaut, envoi **uniquement aux adresses des membres de
+> l'équipe du projet Supabase** ; un autre administrateur risque de ne rien recevoir. En production, configurer un SMTP personnalisé
+> (*Authentication → Emails → SMTP Settings*, par exemple avec le service d'e-mails de votre hébergeur ou un service transactionnel).
+> Sans e-mail, deux solutions de secours, depuis votre poste et sans jamais partager la clé `service_role` :
+> - créer un nouvel utilisateur (*Authentication → Users → Add user → Create new user*, « Auto Confirm User »), ajouter son UUID dans
+>   `public.admins` (*SQL Editor*, comme à l'étape 5), puis supprimer la ligne de l'ancien compte dans `public.admins` ;
+> - ou fixer un nouveau mot de passe avec l'API d'administration de Supabase Auth : requête `PUT
+>   https://<projet>.supabase.co/auth/v1/admin/users/<uuid-de-l-utilisateur>`, en-têtes `apikey` et `Authorization: Bearer <clé
+>   service_role>`, corps JSON `{ "password": "<nouveau mot de passe>" }`.
 
 ### Import du contenu initial
 
 Pour que l'administrateur parte du contenu actuel du site, `npm run seed:db` copie `src/data/content.seed.json` dans la base (réglages,
 prix, photos, chambres, référencement, listes, FAQ) et publie un premier instantané « Import initial ». Il faut la clé `service_role`
-du projet (*Project Settings → API*, affichée une seule fois à la création : la copier tout de suite), uniquement sur votre poste :
+du projet (*Project Settings → API*, où elle reste consultable ; la garder secrète et ne **jamais** la mettre dans Netlify), uniquement
+sur votre poste :
 
 ```bash
 SUPABASE_URL=https://<projet>.supabase.co SUPABASE_SERVICE_ROLE_KEY=<clé service_role> \
@@ -145,7 +161,8 @@ La clé `service_role` donne tous les droits sur la base : ne la collez nulle pa
 
 1. Aller sur `https://<adresse du site>/admin`, se connecter.
 2. Modifier un écran, **Enregistrer** (le brouillon est enregistré, rien n'est encore en ligne). L'accueil indique combien de
-   modifications attendent d'être publiées.
+   modifications attendent d'être publiées. Quitter un écran (menu, lien, fermeture de l'onglet) sans avoir enregistré demande
+   confirmation (« Quitter sans enregistrer ? »).
 3. **Publier** : relire la liste des changements, donner au besoin un nom à la version, cliquer sur **Publier**. L'écran suit la
    construction (« Construction en cours… » puis « En ligne ») ; compter 1 à 2 minutes. Si l'écran affiche « À corriger avant de
    publier » (informations absentes, variable `{{…}}` inconnue, montant invalide…), le bouton reste désactivé : chaque ligne indique
@@ -219,7 +236,8 @@ npx supabase status -o env   # affiche API_URL, ANON_KEY, SERVICE_ROLE_KEY de la
 **Tests**
 
 - `npm test` : tests unitaires (aucune base requise ; `pretest` force le seed).
-- `npm run db:test` : tests SQL (base locale démarrée) : droits, RLS, publication, ordre des listes.
+- `npm run db:test` : tests SQL (base locale démarrée, vide : lancer `npm run db:reset` avant) : droits, RLS, publication, ordre des
+  listes et des pages.
 - `npm run e2e` : parcours complet avec Playwright (première fois : `npx playwright install chromium`). Il **réinitialise la base
   locale** (`db:reset`), importe le contenu, crée deux comptes jetables (un administrateur, un non administrateur, mots de passe
   aléatoires, supprimés à la fin), reconstruit le site avec la base locale et vérifie : connexion, modification d'un tarif, liste des
