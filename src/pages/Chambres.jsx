@@ -11,6 +11,11 @@ import Reveal from '../components/Reveal.jsx'
 import RoomCarousel from '../components/RoomCarousel.jsx'
 import Seo from '../components/Seo.jsx'
 
+const roomPrices = rooms.map((r) => r.price)
+const roomsHeading = roomPrices.length
+  ? `Quatre types de chambre, de ${Math.min(...roomPrices).toLocaleString('fr-FR').replace(/\s/g, ' ')} à ${formatAr(Math.max(...roomPrices))} la nuit`
+  : 'Nos chambres'
+
 export function Component() {
   return (
     <>
@@ -44,7 +49,7 @@ export function Component() {
       <section className="section">
         <Reveal>
           <p className="eyebrow">Nos chambres</p>
-          <h2 className="section-title">Quatre types de chambre, de 45 000 à 60 000 Ar la nuit</h2>
+          <h2 className="section-title">{roomsHeading}</h2>
         </Reveal>
         <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {rooms.map((room, i) => (

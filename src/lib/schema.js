@@ -2,6 +2,15 @@ import { SITE_URL, absoluteUrl, business, faqs, hours, mapsDirectionsUrl, packCo
 
 const businessId = `${SITE_URL}/#business`
 
+const mga = (amount) => Math.round(amount).toLocaleString('fr-FR').replace(/\s/g, ' ')
+
+// Du prix de chambre le plus bas au prix de privatisation le plus haut.
+const priceRange = () => {
+  const low = rooms.length ? Math.min(...rooms.map((r) => r.price)) : Math.min(prices.privatisation.jour, prices.privatisation.nuit)
+  const high = Math.max(prices.privatisation.jour, prices.privatisation.nuit)
+  return `${mga(low)} – ${mga(high)} MGA`
+}
+
 export const ogImage = `${SITE_URL}/og-image.jpg`
 
 // Données fournies par le propriétaire uniquement : pas d'avis ni de note inventés.
@@ -32,7 +41,7 @@ export const businessSchema = () => ({
       closes: `${String(hours.close).padStart(2, '0')}:00`,
     },
   ],
-  priceRange: '45 000 – 200 000 MGA',
+  priceRange: priceRange(),
   currenciesAccepted: 'MGA',
   sameAs: [business.facebookUrl],
   amenityFeature: [

@@ -2,6 +2,7 @@ import { faqs } from '../data/site.js'
 
 /** FAQ en <details> natifs : accessible, sans JS, et le texte est présent dans le HTML pré-rendu. */
 export default function Faq() {
+  if (faqs.length === 0) return null
   return (
     <div className="space-y-3">
       {faqs.map(({ q, a }, i) => (

@@ -1,37 +1,34 @@
-// Source unique de vérité : contact, offres, tarifs, FAQ, pages.
+// Source unique de vérité : contact, offres, tarifs, FAQ, pages. Construite depuis l'instantané de contenu
+// (src/data/content.snapshot.json, écrit par scripts/fetch-content.mjs avant build/dev/test).
 // Ce fichier ne doit importer aucun asset : il est aussi lu par vite.config.js (sitemap, robots, llms.txt).
+import snapshot from './content.snapshot.json'
+import { buildSite } from './build-site.js'
 
 // À changer le jour où le nom de domaine est acheté (une seule ligne).
 export const SITE_URL = 'https://ny-tranonay.netlify.app'
 
-export const business = {
-  name: 'Tranonay',
-  tagline: 'Salle de réception, piscine privatisable et chambres à Antananarivo',
-  phone: '+261 34 21 410 31',
-  phoneHref: 'tel:+261342141031',
-  whatsappNumber: '261342141031',
-  email: 'tranonay4@gmail.com',
-  facebookUrl: 'https://www.facebook.com/profile.php?id=61588385663321',
-  messengerUrl: 'https://m.me/61588385663321',
-  address: {
-    street: 'Ambohimasina, route vers le CUR Vontovorona',
-    city: 'Antananarivo',
-    postalCode: '101',
-    country: 'Madagascar',
-    countryCode: 'MG',
-  },
-  geo: { latitude: -18.945199, longitude: 47.431368 },
-  facebookFollowers: 4000, // « 4 K » affiché sur la page Facebook
-}
+const site = buildSite(snapshot)
 
-// Horaires d'ouverture (heure de Madagascar, UTC+3). La nuitée de privatisation (18h-9h) a ses propres horaires.
-export const hours = {
-  open: 8,
-  close: 21,
-  timeZone: 'Indian/Antananarivo',
-  days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-  label: 'De 8h à 21h',
-}
+/** Identifiant de l'instantané publié ('seed' si le build s'appuie sur le seed). */
+export const contentVersion = snapshot.version ?? 'seed'
+
+export const business = site.business
+export const hours = site.hours
+export const security = site.security
+export const prices = site.prices
+export const packCouple = site.packCouple
+export const privatisationIncludes = site.privatisationIncludes
+export const receptionIncludes = site.receptionIncludes
+export const extras = site.extras
+export const rooms = site.rooms
+export const activitiesList = site.activitiesList
+export const roomHours = site.roomHours
+export const eventTypes = site.eventTypes
+export const faqs = site.faqs
+export const pages = site.pages
+export const photos = site.photos
+export const photoSlots = site.photoSlots
+export const texts = site.texts
 
 const coords = `${business.geo.latitude},${business.geo.longitude}`
 export const mapsEmbedUrl = `https://www.google.com/maps?q=${coords}&z=17&output=embed`
@@ -39,219 +36,6 @@ export const mapsDirectionsUrl = `https://www.google.com/maps/search/?api=1&quer
 
 export const whatsappLink = (text) =>
   `https://wa.me/${business.whatsappNumber}${text ? `?text=${encodeURIComponent(text)}` : ''}`
-
-export const security = {
-  summary:
-    'Le site est gardé en permanence par les gardiens des propriétaires, et le groupe de sécurité Dirickx Guard a récemment rejoint le dispositif.',
-  partnerName: 'Dirickx Guard',
-  partnerUrl: 'https://dirickx.mg',
-}
-
-// Tarifs en ariary (Ar). Toute estimation du site est calculée à partir d'ici.
-export const prices = {
-  privatisation: { jour: 200000, nuit: 200000 },
-  reception: { perDay: 150000, maxGuests: 50 },
-  meals: { platDuJour: 10000, platComplet: 20000 },
-  couple: 100000,
-}
-
-// Offre diffusée par Tranonay (affiche « Pack couple 100.000 Ar »).
-export const packCouple = {
-  name: 'Pack couple',
-  price: prices.couple,
-  includes: [
-    'Une chambre pour la nuitée',
-    'Soupe spéciale ou mine sao spéciale, au choix',
-    'Poulet frit ou poulet pané',
-    'Petit-déjeuner offert par Tranonay',
-  ],
-}
-
-export const privatisationIncludes = [
-  'Piscine',
-  'Grande salle',
-  'Karaoké et dancing',
-  'Baby-foot',
-  'Jeux vidéo sur PC',
-  'Simulateur de course au volant',
-  'Water gun',
-  'Jeux de société',
-]
-
-export const receptionIncludes = [
-  'Salle dinatoire',
-  'Cuisine équipée',
-  'Couvert complet',
-  'Nappes de table',
-  'Housses de chaise',
-  'Décoration florale',
-  'Sonorisation',
-]
-
-export const extras = [
-  'Cinéma en plein air au bord de la piscine',
-  'Écran TV 80 pouces en salle',
-  'Barbecue',
-  'Cuisine équipée avec réfrigérateur',
-  'Sonorisation JBL',
-]
-
-export const rooms = [
-  {
-    id: 'double',
-    name: 'Chambre double',
-    price: 45000,
-    features: ['Lit 2 places', 'Toilette extérieure', 'Climatisation', 'Eau chaude', 'Wifi', 'Terrasse privée'],
-  },
-  {
-    id: 'double-tv',
-    name: 'Chambre double avec TV',
-    price: 50000,
-    features: ['Lit 2 places', 'Toilette extérieure', 'Climatisation', 'Eau chaude', 'Wifi', 'Terrasse privée', 'TV'],
-  },
-  {
-    id: 'twin',
-    name: 'Chambre twin',
-    price: 55000,
-    features: ['Lit 2 places + lit simple', 'Toilette extérieure', 'Climatisation', 'Eau chaude', 'Wifi', 'Terrasse privée', 'TV'],
-  },
-  {
-    id: 'double-privee',
-    name: 'Chambre double, toilette privée',
-    price: 60000,
-    features: ['Lit 2 places', 'Toilette privée', 'Climatisation', 'Eau chaude', 'Wifi', 'Terrasse privée', 'TV'],
-  },
-]
-
-export const activitiesList = [
-  'Piscine',
-  'Cinéma en plein air',
-  'Karaoké & dancing',
-  'Baby-foot',
-  'Simulateur de course',
-  'Trampoline & toboggan',
-  'Water gun',
-  'Barbecue',
-  'Jeux vidéo',
-  'Jeux de société',
-  'Chambres climatisées',
-]
-
-export const roomHours = { checkIn: '10h', checkOut: '10h le lendemain' }
-
-export const eventTypes = [
-  'Anniversaire',
-  'Mariage ou réception de famille',
-  'EVG / EVJF',
-  'Soirée entre amis',
-  'Événement d’entreprise',
-  'Autre',
-]
-
-export const faqs = [
-  {
-    q: 'Où se trouve Tranonay ?',
-    a: 'À Ambohimasina, sur la route vers le CUR de Vontovorona, à Antananarivo (101). Le bouton « Itinéraire » de la page Contact ouvre Google Maps.',
-  },
-  {
-    q: 'Quels sont les horaires d’ouverture ?',
-    a: 'Tranonay est ouvert de 8h à 21h. Les nuitées de privatisation (18h à 9h) et les chambres (check-in 10h, check-out 10h) ont leurs propres horaires.',
-  },
-  {
-    q: 'Qu’est-ce que le pack couple ?',
-    a: 'Pour 100 000 Ar : une chambre pour la nuitée, une soupe spéciale ou une mine sao spéciale au choix, du poulet frit ou pané, et le petit-déjeuner offert par Tranonay.',
-  },
-  {
-    q: 'Quelle est la différence entre la journée et la nuitée en privatisation ?',
-    a: 'La journée de privatisation court de 8h30 à 18h et la nuitée de 18h à 9h. Chacune coûte 200 000 Ar et donne accès à la piscine, à la grande salle, au karaoké et dancing, au baby-foot, aux jeux vidéo, au simulateur de course, au water gun et aux jeux de société.',
-  },
-  {
-    q: 'Que comprend la réception événementielle ?',
-    a: 'Un pack à 150 000 Ar par jour (de 8h30 à 18h) pour 50 personnes maximum : salle dinatoire, cuisine équipée, couverts complets, nappes, housses de chaise, décoration florale et sonorisation.',
-  },
-  {
-    q: 'Peut-on apporter sa propre nourriture ?',
-    a: 'Oui, la nourriture de l’extérieur est autorisée. Les boissons sont servies sur place. Une restauration sur commande est aussi possible : plat du jour à 10 000 Ar ou plat complet (entrée, plat, dessert) à 20 000 Ar.',
-  },
-  {
-    q: 'Quels sont les horaires des chambres ?',
-    a: 'Le check-in se fait à partir de 10h et le check-out a lieu à 10h le lendemain. Les chambres sont climatisées, avec eau chaude, wifi et terrasse privée.',
-  },
-  {
-    q: 'Le lieu est-il sécurisé ?',
-    a: 'Oui. Des gardiens employés par les propriétaires surveillent le site, et le groupe de sécurité Dirickx Guard a été engagé récemment pour renforcer cette surveillance.',
-  },
-  {
-    q: 'Comment réserver ?',
-    a: 'Par WhatsApp, par téléphone, par Messenger ou avec le formulaire de la page Contact. Le simulateur de devis permet de préparer sa demande et de l’envoyer en un clic.',
-  },
-]
-
-// Pages du site : routes, SEO et sitemap en dérivent.
-export const pages = [
-  {
-    path: '/',
-    nav: null,
-    title: 'Tranonay | Salle de réception, piscine et chambres à Antananarivo',
-    description:
-      'Tranonay, à Ambohimasina près du CUR Vontovorona : salle de réception, privatisation avec piscine, karaoké et jeux, chambres climatisées. Lieu sécurisé, devis en ligne.',
-    priority: 1.0,
-  },
-  {
-    path: '/salle-reception-evenements',
-    nav: 'Salle & réceptions',
-    title: 'Location de salle de réception à Antananarivo | Tranonay',
-    description:
-      'Louez la salle de réception de Tranonay à Ambohimasina : 150 000 Ar par jour pour 50 personnes, cuisine équipée, couverts, nappes, housses, décoration florale et sono incluses.',
-    priority: 0.9,
-  },
-  {
-    path: '/privatisation-piscine',
-    nav: 'Privatisation & piscine',
-    title: 'Privatiser une piscine et un espace de loisirs à Antananarivo | Tranonay',
-    description:
-      'Privatisez Tranonay pour 200 000 Ar la journée (8h30-18h) ou la nuitée (18h-9h) : piscine, karaoké, baby-foot, jeux vidéo, simulateur de course, water gun, barbecue.',
-    priority: 0.9,
-  },
-  {
-    path: '/chambres',
-    nav: 'Chambres',
-    title: 'Chambres climatisées à Ambohimasina, Vontovorona | Tranonay',
-    description:
-      'Chambres climatisées avec eau chaude, wifi et terrasse privée à Ambohimasina, route du CUR Vontovorona. De 45 000 à 60 000 Ar la nuit, check-in 10h.',
-    priority: 0.8,
-  },
-  {
-    path: '/tarifs-devis',
-    nav: 'Tarifs & devis',
-    title: 'Tarifs et devis en ligne | Tranonay Antananarivo',
-    description:
-      'Tous les tarifs de Tranonay (privatisation, réception, chambres, restauration) et un simulateur de devis instantané à envoyer par WhatsApp ou Messenger.',
-    priority: 0.9,
-  },
-  {
-    path: '/contact',
-    nav: 'Contact',
-    title: 'Contact et accès | Tranonay, Ambohimasina Antananarivo',
-    description:
-      'Contactez Tranonay par WhatsApp, téléphone, Messenger ou formulaire. Adresse : Ambohimasina, route vers le CUR Vontovorona, Antananarivo 101.',
-    priority: 0.8,
-  },
-  {
-    path: '/mentions-legales',
-    nav: null,
-    title: 'Mentions légales | Tranonay',
-    description: 'Mentions légales du site Tranonay.',
-    priority: 0.1,
-  },
-  {
-    path: '/confidentialite',
-    nav: null,
-    title: 'Politique de confidentialité | Tranonay',
-    description: 'Comment Tranonay traite les données envoyées via le formulaire de contact.',
-    priority: 0.1,
-  },
-]
 
 export const pageByPath = (path) => pages.find((p) => p.path === path)
 export const absoluteUrl = (path = '/') => `${SITE_URL}${path === '/' ? '/' : path}`
