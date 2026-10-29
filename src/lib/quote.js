@@ -22,14 +22,16 @@ const count = (value) => {
   return Number.isFinite(n) && n > 0 ? n : 0
 }
 
-/** Calcule les lignes et le total (Ar) d'une demande. Fonction pure. */
-export function buildQuote(input) {
+/** Calcule les lignes et le total (Ar) d'une demande. Fonction pure.
+ * `content` a la forme des exports `prices` et `rooms` de site.js (par défaut : le contenu actuel du site). */
+export function buildQuote(input, content = { prices, rooms }) {
+  const { prices: p, rooms: roomList } = content
   const lines = []
   const warnings = []
 
   if (input.formula === 'privatisation') {
-    if (input.slots?.jour) lines.push({ label: 'Privatisation — journée (8h30-18h)', amount: prices.privatisation.jour })
-    if (input.slots?.nuit) lines.push({ label: 'Privatisation — nuitée (18h-9h)', amount: prices.privatisation.nuit })
+    if (input.slots?.jour) lines.push({ label: 'Privatisation — journée (8h30-18h)', amount: p.privatisation.jour })
+    if (input.slots?.nuit) lines.push({ label: 'Privatisation — nuitée (18h-9h)', amount: p.privatisation.nuit })
     if (!input.slots?.jour && !input.slots?.nuit) warnings.push('Choisissez la journée, la nuitée, ou les deux.')
   }
 
@@ -37,20 +39,20 @@ export function buildQuote(input) {
     const days = Math.max(1, count(input.receptionDays))
     lines.push({
       label: days > 1 ? `Réception événementielle — ${days} jours` : 'Réception événementielle — 1 jour (8h30-18h)',
-      amount: prices.reception.perDay * days,
+      amount: p.reception.perDay * days,
     })
-    if (count(input.guests) > prices.reception.maxGuests) {
-      warnings.push(`La réception accueille ${prices.reception.maxGuests} personnes maximum : contactez-nous pour un groupe plus grand.`)
+    if (count(input.guests) > p.reception.maxGuests) {
+      warnings.push(`La réception accueille ${p.reception.maxGuests} personnes maximum : contactez-nous pour un groupe plus grand.`)
     }
   }
 
   if (input.formula === 'couple') {
     const packs = Math.max(1, count(input.couplePacks))
-    lines.push({ label: packs > 1 ? `${packs} × Pack couple` : 'Pack couple (nuitée, repas, petit-déjeuner)', amount: prices.couple * packs })
+    lines.push({ label: packs > 1 ? `${packs} × Pack couple` : 'Pack couple (nuitée, repas, petit-déjeuner)', amount: p.couple * packs })
   }
 
   const nights = Math.max(1, count(input.nights))
-  for (const room of rooms) {
+  for (const room of roomList) {
     const qty = count(input.rooms?.[room.id])
     if (qty > 0) {
       lines.push({
@@ -61,9 +63,9 @@ export function buildQuote(input) {
   }
 
   const platDuJour = count(input.meals?.platDuJour)
-  if (platDuJour > 0) lines.push({ label: `${platDuJour} × plat du jour`, amount: prices.meals.platDuJour * platDuJour })
+  if (platDuJour > 0) lines.push({ label: `${platDuJour} × plat du jour`, amount: p.meals.platDuJour * platDuJour })
   const platComplet = count(input.meals?.platComplet)
-  if (platComplet > 0) lines.push({ label: `${platComplet} × plat complet`, amount: prices.meals.platComplet * platComplet })
+  if (platComplet > 0) lines.push({ label: `${platComplet} × plat complet`, amount: p.meals.platComplet * platComplet })
 
   const total = lines.reduce((sum, line) => sum + line.amount, 0)
   return { lines, total, warnings }
