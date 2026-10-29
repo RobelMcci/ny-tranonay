@@ -1,13 +1,7 @@
 import { prices, rooms } from '../data/site.js'
+import { formatAr, formatDateFr } from './format.js'
 
-export const formatAr = (amount) => `${Math.round(amount).toLocaleString('fr-FR')} Ar`
-
-export const formatDateFr = (isoDate) => {
-  if (!isoDate) return ''
-  const date = new Date(`${isoDate}T00:00:00Z`)
-  if (Number.isNaN(date.getTime())) return ''
-  return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(date)
-}
+export { formatAr, formatDateFr }
 
 export const emptyQuoteInput = () => ({
   formula: 'privatisation', // 'privatisation' | 'reception' | 'sejour' | 'couple'
