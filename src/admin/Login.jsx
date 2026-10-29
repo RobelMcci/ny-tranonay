@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from './useAuth.js'
 
 export function Component() {
-  const { signIn, resetPassword, notice, configError } = useAuth()
+  const { signIn, resetPassword, notice, clearNotice, configError } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -30,6 +30,7 @@ export function Component() {
   async function onForgot() {
     setError(null)
     setInfo(null)
+    clearNotice()
     if (!email.trim()) {
       setError('Saisissez votre adresse e-mail pour recevoir le lien de réinitialisation.')
       return

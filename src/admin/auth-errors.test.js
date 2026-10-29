@@ -6,9 +6,25 @@ describe('authErrorMessage', () => {
     expect(authErrorMessage({ message: 'Invalid login credentials', status: 400 })).toMatch(/incorrect/i)
   })
 
+  it('privilégie le code invalid_credentials', () => {
+    expect(authErrorMessage({ code: 'invalid_credentials', message: 'autre texte', status: 400 })).toMatch(/incorrect/i)
+  })
+
+  it('traduit un nouveau mot de passe identique ou trop faible', () => {
+    expect(authErrorMessage({ code: 'same_password', message: 'x', status: 422 })).toMatch(/différent/)
+    expect(authErrorMessage({ code: 'weak_password', message: 'x', status: 422 })).toMatch(/trop faible/)
+    expect(authErrorMessage({ message: 'New password should be different from the old password.' })).toMatch(/différent/)
+  })
+
+  it("n'assimile pas une erreur de programmation à un problème réseau", () => {
+    expect(authErrorMessage(new TypeError('x is not a function'))).not.toMatch(/connexion/i)
+  })
+
   it('signale un problème de connexion réseau', () => {
     expect(authErrorMessage(new TypeError('Failed to fetch'))).toMatch(/connexion/i)
     expect(authErrorMessage({ message: 'NetworkError when attempting to fetch resource.' })).toMatch(/connexion/i)
+    expect(authErrorMessage({ message: 'Load failed' })).toMatch(/connexion/i)
+    expect(authErrorMessage({ name: 'AuthRetryableFetchError', message: 'x', status: 0 })).toMatch(/connexion/i)
   })
 
   it('signale trop de tentatives sur un code 429', () => {

@@ -1,6 +1,7 @@
-import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { ClientOnly, Head } from 'vite-react-ssg'
 import { AuthProvider } from './auth.jsx'
+import NewPassword from './NewPassword.jsx'
 import { useAuth } from './useAuth.js'
 
 const icon = (children) => (
@@ -31,7 +32,7 @@ function LoadingShell() {
 }
 
 function Shell() {
-  const { signOut } = useAuth()
+  const { signOut, flash, clearFlash } = useAuth()
   const sidebarLink =
     'touch-target flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#2B211B] transition-colors hover:bg-[#FDF6EC] aria-[current=page]:bg-[#C2410C] aria-[current=page]:text-white'
   const bottomLink =
@@ -77,6 +78,16 @@ function Shell() {
         </header>
 
         <main id="contenu-admin" className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+          <div role="status">
+            {flash && (
+              <p className="mb-6 flex items-center justify-between gap-3 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 ring-1 ring-emerald-200">
+                {flash}
+                <button type="button" onClick={clearFlash} className="touch-target px-2 underline underline-offset-2">
+                  Fermer
+                </button>
+              </p>
+            )}
+          </div>
           <Outlet />
         </main>
       </div>
@@ -98,12 +109,15 @@ function Shell() {
 
 /** Garde : non connecté → connexion ; administrateur sur la connexion → accueil. */
 function Guard() {
-  const { session, isAdmin, loading } = useAuth()
+  const { session, isAdmin, loading, recovery } = useAuth()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const onLogin = pathname.replace(/\/+$/, '') === '/admin/connexion'
   const allowed = Boolean(session) && isAdmin
 
   if (loading) return <LoadingShell />
+  // Lien « mot de passe oublié » : choisir un nouveau mot de passe avant tout (administrateurs seulement).
+  if (recovery && allowed) return <NewPassword onDone={() => navigate('/admin', { replace: true })} />
   if (onLogin) return allowed ? <Navigate to="/admin" replace /> : <Outlet />
   if (!allowed) return <Navigate to="/admin/connexion" replace />
   return <Shell />
