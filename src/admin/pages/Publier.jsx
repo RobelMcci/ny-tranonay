@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { fetchBuildVersion, fetchDraft, fetchHistory, fetchPublished, publishContent, rebuildSite, restoreSnapshot } from '../api.js'
 import { deriveBuildStatus, describeBuildStatus, formatSnapshotDate, startPolling } from '../build-status.js'
 import ConfirmRestore from '../components/ConfirmRestore.jsx'
 import Field from '../components/Field.jsx'
 import { diffContent, groupChanges } from '../diff.js'
+import { publishProblems } from '../publish-problems.js'
 
 const focusRing = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C2410C]'
 const MAX_LABEL = 60
@@ -18,7 +19,11 @@ const BUILD_STYLE = {
   online: 'bg-emerald-50 text-emerald-950 ring-emerald-200',
   building: 'bg-amber-50 text-amber-950 ring-amber-300',
   stalled: 'bg-red-50 text-red-900 ring-red-200',
+  fallback: 'bg-red-50 text-red-900 ring-red-200',
 }
+
+/** États où le site en ligne n'est pas la dernière version : bouton « Relancer la construction ». */
+const NEEDS_REBUILD = ['stalled', 'fallback']
 
 function Badge({ className, children }) {
   return <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${className}`}>{children}</span>
@@ -62,6 +67,27 @@ function ChangeLine({ change }) {
         </p>
       )}
     </li>
+  )
+}
+
+function Problems({ problems }) {
+  return (
+    <section aria-labelledby="titre-a-corriger" className="mt-8 rounded-2xl bg-red-50 p-5 text-red-900 ring-1 ring-red-200">
+      <h2 id="titre-a-corriger" className="text-xl text-red-900">
+        À corriger avant de publier
+      </h2>
+      <p className="mt-1 text-sm">
+        Le site ne pourrait pas être construit avec ces modifications. Ouvrez l’écran indiqué au début de chaque ligne, corrigez,
+        enregistrez, puis revenez ici.
+      </p>
+      <ul className="mt-3 list-disc space-y-1 pl-5">
+        {problems.map((problem) => (
+          <li key={problem} className="break-words">
+            {problem}
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 
@@ -151,6 +177,8 @@ export function Component() {
   }
 
   const changes = load.status === 'ready' ? diffContent(published?.payload ?? null, draft) : []
+  // Mêmes contrôles que le build (validateContent, variables, buildSite) : on ne publie pas une version qui casserait le site.
+  const problems = useMemo(() => (load.status === 'ready' ? publishProblems(draft) : []), [load.status, draft])
   const latest = history[0] ?? published
   const status = deriveBuildStatus({
     latest: latest ? { id: latest.id, created_at: latest.created_at } : null,
@@ -158,7 +186,7 @@ export function Component() {
     now,
     buildStartedAt: rebuiltAt,
   })
-  const waiting = load.status === 'ready' && (status.state === 'building' || status.state === 'stalled')
+  const waiting = load.status === 'ready' && (status.state === 'building' || NEEDS_REBUILD.includes(status.state))
 
   // Le suivi s'arrête dès que la version en ligne est la dernière ; il se relance tout seul après un rechargement.
   // Une seule vérification à la fois, en pause quand l'onglet est masqué (voir `startPolling`).
@@ -189,7 +217,7 @@ export function Component() {
 
   const onPublish = async (event) => {
     event.preventDefault()
-    if (inFlight.current || changes.length === 0) return
+    if (inFlight.current || changes.length === 0 || problems.length > 0) return
     inFlight.current = true
     setSending(true)
     setProblem(null)
@@ -287,15 +315,23 @@ export function Component() {
           <div role="status" className="mt-6">
             {status.state !== 'none' && (
               <div className={`rounded-2xl p-5 ring-1 ${BUILD_STYLE[status.state]}`}>
+                {/* Le problème est dit en toutes lettres, pas seulement par la couleur. */}
+                {NEEDS_REBUILD.includes(status.state) && <p className="text-xs font-bold uppercase tracking-wide">Problème</p>}
                 <p className="text-lg font-semibold">
                   <span className="sr-only">État du site : </span>
                   {describeBuildStatus(status)}
                 </p>
+                {status.state === 'fallback' && (
+                  <p className="mt-1 text-sm">
+                    Vérifiez que le projet Supabase est actif (pas en pause) et que les variables du site sont renseignées dans Netlify,
+                    puis relancez la construction.
+                  </p>
+                )}
                 {status.since && <p className="mt-1 text-sm">Dernière version enregistrée le {formatSnapshotDate(status.since)}.</p>}
               </div>
             )}
           </div>
-          {status.state === 'stalled' && (
+          {NEEDS_REBUILD.includes(status.state) && (
             <button type="button" onClick={onRebuild} disabled={busy} className={`btn-primary touch-target mt-4 ${focusRing}`}>
               Relancer la construction
             </button>
@@ -315,6 +351,8 @@ export function Component() {
             </div>
           )}
 
+          {problems.length > 0 && <Problems problems={problems} />}
+
           <Changes changes={changes} hasPublished={Boolean(published)} />
 
           <form onSubmit={onPublish} className="card-surface mt-6 grid gap-4" aria-labelledby="titre-envoi">
@@ -333,10 +371,21 @@ export function Component() {
               />
             </Field>
             <div className="flex flex-wrap items-center gap-4">
-              <button type="submit" disabled={changes.length === 0 || busy} className={`btn-primary touch-target ${focusRing}`}>
+              <button
+                type="submit"
+                disabled={changes.length === 0 || busy || problems.length > 0}
+                aria-describedby={problems.length > 0 ? 'publier-bloque' : undefined}
+                className={`btn-primary touch-target ${focusRing}`}
+              >
                 {sending ? 'Publication en cours…' : 'Publier'}
               </button>
-              {changes.length === 0 && <p className="text-sm text-slate-700">Aucune modification à publier.</p>}
+              {problems.length > 0 ? (
+                <p id="publier-bloque" className="text-sm font-semibold text-red-900">
+                  Publication impossible : {problems.length > 1 ? `${problems.length} points sont` : '1 point est'} à corriger (voir « À corriger avant de publier »).
+                </p>
+              ) : (
+                changes.length === 0 && <p className="text-sm text-slate-700">Aucune modification à publier.</p>
+              )}
             </div>
           </form>
 

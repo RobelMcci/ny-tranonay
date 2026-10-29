@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { loadContent } from './content-loader.mjs'
+import { ContentLoadError, isStrictBuild, loadContent } from './content-loader.mjs'
 import seed from '../../src/data/content.seed.json'
 
 const ENV = { SUPABASE_URL: 'https://demo.supabase.test/', SUPABASE_ANON_KEY: 'anon-secret-key' }
@@ -121,5 +121,97 @@ describe('loadContent', () => {
     const result = await loadContent({ env: {}, fetchImpl: vi.fn(), readSeed: () => clone(seed), log })
     expect(result.source).toBe('seed')
     expect(result.content).toEqual(seed)
+  })
+})
+
+describe('loadContent en mode strict (production Netlify)', () => {
+  const runStrict = async ({ env = ENV, fetchImpl }) => {
+    const log = vi.fn()
+    const readSeed = vi.fn(async () => clone(seed))
+    const outcome = await loadContent({ env, fetchImpl, readSeed, log, strict: true }).then(
+      (result) => ({ result }),
+      (error) => ({ error }),
+    )
+    return { ...outcome, log, readSeed }
+  }
+
+  const { prices: _prices, ...withoutPrices } = payload
+  const negative = clone(payload)
+  negative.prices[0].amount = -1
+
+  it.each([
+    ['fetch rejette', async () => { throw new TypeError('fetch failed') }, /injoignable.*fetch failed/],
+    [
+      'délai dépassé',
+      async () => { throw Object.assign(new Error('The operation was aborted due to timeout'), { name: 'TimeoutError' }) },
+      /injoignable.*délai/,
+    ],
+    ['HTTP 500', async () => jsonResponse({ message: 'boom' }, 500), /HTTP 500/],
+    ['projet en pause (HTTP 503)', async () => jsonResponse({ message: 'paused' }, 503), /HTTP 503/],
+    [
+      'corps illisible',
+      async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('Unexpected token <') } }),
+      /illisible/,
+    ],
+    ['réponse qui n’est pas un tableau', async () => jsonResponse({ id: ROW_ID, payload }), /inattendue/],
+    ['sections manquantes', async () => jsonResponse([{ id: ROW_ID, payload: withoutPrices }]), /invalide.*prices/],
+    ['prix négatif', async () => jsonResponse([{ id: ROW_ID, payload: negative }]), /invalide.*prices/],
+  ])('lève ContentLoadError sans lire le seed (%s)', async (_name, impl, pattern) => {
+    const { error, result, readSeed, log } = await runStrict({ fetchImpl: vi.fn(impl) })
+    expect(result).toBeUndefined()
+    expect(error).toBeInstanceOf(ContentLoadError)
+    expect(error.name).toBe('ContentLoadError')
+    expect(error.message).toMatch(pattern)
+    expect(error.message).not.toContain(ENV.SUPABASE_ANON_KEY)
+    expect(readSeed).not.toHaveBeenCalled()
+    expect(log).not.toHaveBeenCalled()
+  })
+
+  it('aucun instantané publié (HTTP 200, tableau vide) : repli sur le seed, même en strict', async () => {
+    const { error, result, log } = await runStrict({ fetchImpl: vi.fn(async () => jsonResponse([])) })
+    expect(error).toBeUndefined()
+    expectSeedFallback(result, log, /aucun instantané publié.*repli sur le seed/)
+  })
+
+  it('le contenu publié valide est renvoyé normalement', async () => {
+    const { error, result } = await runStrict({ fetchImpl: vi.fn(async () => jsonResponse([{ id: ROW_ID, payload }])) })
+    expect(error).toBeUndefined()
+    expect(result.source).toBe('supabase')
+    expect(result.content.version).toBe(ROW_ID)
+  })
+
+  it('le mode non strict reste un repli sur le seed pour une réponse qui n’est pas un tableau', async () => {
+    const { result, log } = await run({ fetchImpl: vi.fn(async () => jsonResponse({ id: ROW_ID, payload })) })
+    expectSeedFallback(result, log, /inattendue.*repli sur le seed/)
+  })
+})
+
+describe('isStrictBuild', () => {
+  const PROD = { NETLIFY: 'true', CONTEXT: 'production', ...ENV }
+
+  it('strict en production Netlify avec les deux variables Supabase', () => {
+    expect(isStrictBuild(PROD)).toBe(true)
+  })
+
+  it.each([
+    ['hors Netlify', { ...PROD, NETLIFY: undefined }],
+    ['NETLIFY différent de "true"', { ...PROD, NETLIFY: '1' }],
+    ['aperçu de déploiement', { ...PROD, CONTEXT: 'deploy-preview' }],
+    ['déploiement de branche', { ...PROD, CONTEXT: 'branch-deploy' }],
+    ['CONTEXT absent', { ...PROD, CONTEXT: undefined }],
+    ['SUPABASE_URL absente', { ...PROD, SUPABASE_URL: undefined }],
+    ['SUPABASE_ANON_KEY absente', { ...PROD, SUPABASE_ANON_KEY: undefined }],
+    ['variables vides', { ...PROD, SUPABASE_URL: ' ', SUPABASE_ANON_KEY: '' }],
+    ['échappatoire CONTENT_ALLOW_SEED_FALLBACK=1', { ...PROD, CONTENT_ALLOW_SEED_FALLBACK: '1' }],
+    ['environnement vide', {}],
+    ['environnement absent', undefined],
+  ])('non strict : %s', (_name, env) => {
+    expect(isStrictBuild(env)).toBe(false)
+  })
+
+  it('l’échappatoire ne vaut que pour « 1 » ou « true »', () => {
+    expect(isStrictBuild({ ...PROD, CONTENT_ALLOW_SEED_FALLBACK: 'true' })).toBe(false)
+    expect(isStrictBuild({ ...PROD, CONTENT_ALLOW_SEED_FALLBACK: '0' })).toBe(true)
+    expect(isStrictBuild({ ...PROD, CONTENT_ALLOW_SEED_FALLBACK: '' })).toBe(true)
   })
 })

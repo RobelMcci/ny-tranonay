@@ -32,6 +32,19 @@ describe('deriveBuildStatus', () => {
     expect(deriveBuildStatus({ latest: { id: 'seed', created_at: CREATED }, liveVersion: 'seed', now: minutes(1) }).state).toBe('building')
   })
 
+  it('« fallback » : le site affiche le seed alors qu’une version existe, une fois les 10 minutes écoulées', () => {
+    expect(deriveBuildStatus({ latest, liveVersion: 'seed', now: minutes(10) })).toEqual({ state: 'fallback', since: new Date(CREATED) })
+    expect(deriveBuildStatus({ latest, liveVersion: 'seed', now: minutes(120) }).state).toBe('fallback')
+  })
+
+  it('« building » (pas « fallback ») tant que la fenêtre de 10 minutes n’est pas écoulée', () => {
+    expect(deriveBuildStatus({ latest, liveVersion: 'seed', now: minutes(9.99) }).state).toBe('building')
+  })
+
+  it('une version en ligne inconnue (null) après 10 minutes reste « stalled »', () => {
+    expect(deriveBuildStatus({ latest, liveVersion: null, now: minutes(11) }).state).toBe('stalled')
+  })
+
   it('une date invalide compte comme « building »', () => {
     const status = deriveBuildStatus({ latest: { id: 'x', created_at: 'pas une date' }, liveVersion: null, now: minutes(500) })
     expect(status).toEqual({ state: 'building', since: null })
@@ -48,6 +61,12 @@ describe('deriveBuildStatus avec buildStartedAt (relance manuelle)', () => {
     const status = deriveBuildStatus({ latest, liveVersion: 'snap-1', now: minutes(35), buildStartedAt: restarted })
     expect(status).toEqual({ state: 'building', since: new Date(CREATED) })
     expect(deriveBuildStatus({ latest, liveVersion: 'snap-1', now: minutes(40), buildStartedAt: restarted }).state).toBe('stalled')
+  })
+
+  it('après une relance, « seed » redevient « building » puis « fallback » 10 minutes plus tard', () => {
+    const restarted = minutes(30).toISOString()
+    expect(deriveBuildStatus({ latest, liveVersion: 'seed', now: minutes(35), buildStartedAt: restarted }).state).toBe('building')
+    expect(deriveBuildStatus({ latest, liveVersion: 'seed', now: minutes(40), buildStartedAt: restarted }).state).toBe('fallback')
   })
 
   it('une relance plus ancienne que la version, absente ou invalide est ignorée', () => {
@@ -68,6 +87,9 @@ describe('describeBuildStatus', () => {
     expect(describeBuildStatus({ state: 'building', since: null })).toBe('Construction en cours…')
     expect(describeBuildStatus({ state: 'stalled', since: null })).toBe('Échec ou lenteur : la version actuelle reste en ligne.')
     expect(describeBuildStatus({ state: 'none', since: null })).toBe('Aucune version publiée pour l’instant.')
+    expect(describeBuildStatus({ state: 'fallback', since: null })).toBe(
+      'Le site affiche le contenu d’origine (secours) : la dernière version publiée n’a pas pu être chargée.',
+    )
   })
 })
 

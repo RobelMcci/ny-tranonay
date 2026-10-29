@@ -11,8 +11,10 @@ c'est ce qui permet un bon référencement). Hébergé sur Netlify (config dans 
 **D'où vient le contenu ?** Les informations modifiables (coordonnées, tarifs, chambres, listes, FAQ, référencement, photos, textes)
 vivent dans une base Supabase et se modifient depuis le tableau de bord `/admin` (voir plus bas). À chaque build, le script
 `scripts/fetch-content.mjs` lit le **dernier instantané publié** et l'écrit dans `src/data/content.snapshot.json` (fichier généré, non
-versionné) ; `src/data/site.js` s'en sert. Si Supabase est absent ou injoignable, le build se replie sur `src/data/content.seed.json`
-(le contenu d'origine, commité) : **le site se construit toujours**, avec ou sans base.
+versionné) ; `src/data/site.js` s'en sert. Sur votre poste, dans les aperçus Netlify, sans variables Supabase ou sur une base encore
+vide, le build se replie sur `src/data/content.seed.json` (le contenu d'origine, commité) : le site se construit avec ou sans base.
+**En production Netlify, en revanche, une base injoignable fait échouer le build** (voir « Si Supabase est indisponible ») : Netlify
+garde alors le site actuel en ligne au lieu de remettre le contenu d'origine.
 
 ```bash
 npm install
@@ -145,21 +147,35 @@ La clé `service_role` donne tous les droits sur la base : ne la collez nulle pa
 2. Modifier un écran, **Enregistrer** (le brouillon est enregistré, rien n'est encore en ligne). L'accueil indique combien de
    modifications attendent d'être publiées.
 3. **Publier** : relire la liste des changements, donner au besoin un nom à la version, cliquer sur **Publier**. L'écran suit la
-   construction (« Construction en cours… » puis « En ligne ») ; compter 1 à 2 minutes.
+   construction (« Construction en cours… » puis « En ligne ») ; compter 1 à 2 minutes. Si l'écran affiche « À corriger avant de
+   publier » (informations absentes, variable `{{…}}` inconnue, montant invalide…), le bouton reste désactivé : chaque ligne indique
+   l'écran à ouvrir pour corriger.
 4. Si la construction échoue ou semble bloquée, le bouton « Relancer la construction » relance le build sans rien republier.
 
 **Revenir en arrière** : écran Publier → *Historique* → « Revenir à cette version » sur une version précédente. Cela crée une nouvelle
 version identique à l'ancienne et relance la construction. Les écrans de modification gardent leurs valeurs actuelles : le prochain
 « Publier » les remettra en ligne par-dessus la version restaurée.
 
-**Si Supabase est indisponible** : le site public n'est pas touché (c'est un site statique déjà construit). Un nouveau build, lui, se
-replie sur `src/data/content.seed.json`, c'est-à-dire sur le contenu d'origine (le build affiche `contenu : seed` dans ses journaux
-et `version.json` indique `"snapshot": "seed"`) : pour éviter de remettre en ligne un contenu ancien, ne relancez pas de déploiement
-tant que Supabase est en panne, ou republiez ensuite.
+**Si Supabase est indisponible** : le site public n'est pas touché (c'est un site statique déjà construit). Pour un nouveau build :
+
+- **en production Netlify** (variables `NETLIFY=true` et `CONTEXT=production`, posées par Netlify, avec `SUPABASE_URL` et
+  `SUPABASE_ANON_KEY` définies), le build **échoue volontairement** (« contenu : ÉCHEC du chargement du contenu publié… ») dès que le
+  dernier instantané ne peut pas être lu (Supabase en pause ou injoignable, erreur HTTP, réponse ou instantané invalide). Un build en
+  échec ne remplace rien : **Netlify garde le déploiement précédent en ligne**. Réveillez ou réparez Supabase, puis relancez le
+  déploiement (*Deploys → Trigger deploy*, ou « Relancer la construction » dans l'écran Publier) ;
+- seule exception : une base qui ne contient **aucun instantané publié** (première mise en place) se construit avec le contenu d'origine ;
+- échappatoire, si vous voulez vraiment construire avec le contenu d'origine (`src/data/content.seed.json`) : ajouter la variable
+  d'environnement Netlify `CONTENT_ALLOW_SEED_FALLBACK=1`, déployer, puis la retirer ;
+- partout ailleurs (poste local, aperçus de déploiement et déploiements de branche, variables absentes), le build se replie sur le
+  contenu d'origine en l'écrivant dans ses journaux (`contenu : seed`) ; `version.json` indique alors `"snapshot": "seed"`.
+
+Si le site en ligne affiche malgré tout le contenu d'origine alors qu'une version a été publiée (variables absentes, échappatoire),
+l'écran Publier l'indique (« Le site affiche le contenu d'origine (secours)… ») et propose « Relancer la construction ».
 
 **Offre gratuite Supabase** : un projet gratuit est mis en pause après une semaine d'inactivité. Le site public n'est pas affecté
-(HTML statique), mais le tableau de bord (et un build pendant la pause, qui se replierait alors sur le seed) a besoin d'un projet réveillé :
-le relancer depuis le tableau de bord Supabase (*Restore project*) avant de travailler.
+(HTML statique), mais le tableau de bord et les builds de production ont besoin d'un projet réveillé : pendant la pause, un déploiement
+(par exemple après une modification du code) échoue et l'ancienne version reste en ligne. Relancer le projet depuis le tableau de bord
+Supabase (*Restore project*) avant de travailler ou de déployer.
 
 **Supprimer l'administrateur** : `content_snapshots.created_by` référence l'utilisateur Supabase de la personne qui a publié. Supprimer
 cet utilisateur dans Supabase Auth est refusé tant que des versions publiées le référencent ; il faut d'abord une migration ou un

@@ -5,7 +5,9 @@
 export const STALL_AFTER_MS = 10 * 60 * 1000
 
 /**
- * @typedef {'none' | 'online' | 'building' | 'stalled'} BuildState
+ * `fallback` : passé le délai, le site en ligne affiche le contenu d'origine (seed) alors qu'une version existe
+ * (la dernière version publiée n'a pas pu être chargée au build : variables absentes, repli autorisé…).
+ * @typedef {'none' | 'online' | 'building' | 'stalled' | 'fallback'} BuildState
  * @typedef {{ state: BuildState, since: Date | null }} BuildStatus
  */
 
@@ -24,7 +26,8 @@ export function deriveBuildStatus({ latest, liveVersion, now, buildStartedAt = n
   if (!since) return { state: 'building', since }
   const restarted = buildStartedAt === null ? Number.NaN : new Date(buildStartedAt).getTime()
   const start = Number.isNaN(restarted) ? since.getTime() : Math.max(since.getTime(), restarted)
-  return { state: now.getTime() - start >= STALL_AFTER_MS ? 'stalled' : 'building', since }
+  if (now.getTime() - start < STALL_AFTER_MS) return { state: 'building', since }
+  return { state: liveVersion === 'seed' ? 'fallback' : 'stalled', since }
 }
 
 /**
@@ -39,6 +42,8 @@ export function describeBuildStatus({ state }) {
       return 'Construction en cours…'
     case 'stalled':
       return 'Échec ou lenteur : la version actuelle reste en ligne.'
+    case 'fallback':
+      return 'Le site affiche le contenu d’origine (secours) : la dernière version publiée n’a pas pu être chargée.'
     default:
       return 'Aucune version publiée pour l’instant.'
   }
