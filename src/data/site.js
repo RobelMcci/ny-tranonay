@@ -3,7 +3,8 @@
 // Ce fichier ne doit importer aucun asset : il est aussi lu par vite.config.js (sitemap, robots, llms.txt).
 import snapshot from './content.snapshot.json'
 import { buildSite } from './build-site.js'
-import { getText } from './text-slots.js'
+import { buildVars } from '../lib/interpolate.js'
+import { resolveText } from './text-slots.js'
 
 // À changer le jour où le nom de domaine est acheté (une seule ligne).
 export const SITE_URL = 'https://ny-tranonay.netlify.app'
@@ -31,15 +32,16 @@ export const photos = site.photos
 export const photoSlots = site.photoSlots
 export const texts = site.texts
 
-/** Texte modifiable d'un emplacement déclaré dans text-slots.js (surcharge publiée, sinon texte par défaut). */
-export const text = (key) => getText(key, texts)
+/** Texte modifiable d'un emplacement déclaré dans text-slots.js (surcharge publiée, sinon texte par défaut avec ses variables résolues). */
+const textVars = buildVars(snapshot)
+export const text = (key) => resolveText(key, texts, textVars)
 
 const coords = `${business.geo.latitude},${business.geo.longitude}`
 export const mapsEmbedUrl = `https://www.google.com/maps?q=${coords}&z=17&output=embed`
 export const mapsDirectionsUrl = `https://www.google.com/maps/search/?api=1&query=${coords}`
 
-export const whatsappLink = (text) =>
-  `https://wa.me/${business.whatsappNumber}${text ? `?text=${encodeURIComponent(text)}` : ''}`
+export const whatsappLink = (message) =>
+  `https://wa.me/${business.whatsappNumber}${message ? `?text=${encodeURIComponent(message)}` : ''}`
 
 export const pageByPath = (path) => pages.find((p) => p.path === path)
 export const absoluteUrl = (path = '/') => `${SITE_URL}${path === '/' ? '/' : path}`

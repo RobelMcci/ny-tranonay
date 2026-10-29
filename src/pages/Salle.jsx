@@ -27,7 +27,7 @@ export function Component() {
         photo="salleLongue"
         eyebrow="Salle & réceptions"
         title={text('salle.hero.titre')}
-        lead={`Une grande salle lumineuse, déjà dressée : nappes, housses de chaise, décoration florale et sonorisation. Jusqu’à ${prices.reception.maxGuests} personnes, de 8h30 à 18h.`}
+        lead={text('salle.hero.intro')}
       >
         <Link to="/tarifs-devis#simulateur" className="btn-primary">Obtenir un devis</Link>
       </PageHero>

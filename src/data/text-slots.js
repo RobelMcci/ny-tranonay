@@ -1,10 +1,8 @@
 // Emplacements de texte modifiables depuis le tableau de bord. Le défaut est le texte actuel du site :
 // une surcharge (content.texts) ne remplace le défaut que si elle est une chaîne non vide.
 // Ce fichier ne doit importer aucun asset : il est partagé avec les scripts Node.
-//
-// Textes laissés dans le code car ils intègrent des valeurs calculées (ils ne sont pas des chaînes simples) :
-//   - `salle.hero.intro` (capacité maximale d'invités tirée des tarifs)
-//   - `chambres.hero.intro` (heures d'arrivée et de départ tirées des réglages)
+// Un défaut peut contenir des variables `{{...}}` (ex. `{{prix.reception_max_invites}}`) : `resolveText` les remplace.
+import { interpolate } from '../lib/interpolate.js'
 
 /**
  * @typedef {object} TextSlot
@@ -90,6 +88,14 @@ export const textSlots = [
     multiline: false,
   },
   {
+    key: 'salle.hero.intro',
+    page: 'salle',
+    label: 'Texte d’introduction',
+    default:
+      'Une grande salle lumineuse, déjà dressée : nappes, housses de chaise, décoration florale et sonorisation. Jusqu’à {{prix.reception_max_invites}} personnes, de 8h30 à 18h.',
+    multiline: true,
+  },
+  {
     key: 'privatisation.hero.titre',
     page: 'privatisation',
     label: 'Titre principal',
@@ -110,6 +116,14 @@ export const textSlots = [
     label: 'Titre principal',
     default: 'Chambres climatisées à Ambohimasina, route du CUR Vontovorona',
     multiline: false,
+  },
+  {
+    key: 'chambres.hero.intro',
+    page: 'chambres',
+    label: 'Texte d’introduction',
+    default:
+      'Terminez la soirée sur place : chambres avec climatisation, eau chaude, wifi et terrasse privée. Check-in à partir de {{checkin}}, check-out à {{checkout}}.',
+    multiline: true,
   },
   {
     key: 'tarifs.hero.titre',
@@ -144,19 +158,36 @@ export const textSlots = [
 
 const slotByKey = new Map(textSlots.map((slot) => [slot.key, slot]))
 
-/**
- * Texte d'un emplacement : la surcharge si elle est une chaîne non vide, sinon le défaut.
- * @param {string} key Clé d'un emplacement déclaré dans `textSlots`.
- * @param {Record<string, string>} [texts] Surcharges (clé → texte déjà interpolé).
- * @returns {string}
- * @throws {Error} Si la clé n'est pas déclarée.
- */
-export function getText(key, texts) {
+function lookup(key, texts) {
   const slot = slotByKey.get(key)
   if (!slot) throw new Error(`Emplacement de texte inconnu : ${key}`)
   if (texts && Object.hasOwn(texts, key)) {
     const override = texts[key]
-    if (typeof override === 'string' && override !== '') return override
+    if (typeof override === 'string' && override !== '') return { value: override, fromDefault: false }
   }
-  return slot.default
+  return { value: slot.default, fromDefault: true }
+}
+
+/**
+ * Texte brut d'un emplacement : la surcharge si elle est une chaîne non vide, sinon le défaut (variables non résolues).
+ * @param {string} key Clé d'un emplacement déclaré dans `textSlots`.
+ * @param {Record<string, string>} [texts] Surcharges (clé → texte).
+ * @returns {string}
+ * @throws {Error} Si la clé n'est pas déclarée.
+ */
+export function getText(key, texts) {
+  return lookup(key, texts).value
+}
+
+/**
+ * Texte affichable d'un emplacement. Les surcharges sont déjà interpolées par `buildSite` : seul le défaut est
+ * interpolé ici (jamais deux fois une même valeur). Une variable inconnue dans le défaut lève une erreur.
+ * @param {string} key
+ * @param {Record<string, string>} texts Surcharges déjà interpolées.
+ * @param {Record<string, string>} vars Variables de texte (`buildVars`).
+ * @returns {string}
+ */
+export function resolveText(key, texts, vars) {
+  const { value, fromDefault } = lookup(key, texts)
+  return fromDefault ? interpolate(value, vars) : value
 }
