@@ -59,9 +59,35 @@ describe('interpolate', () => {
   })
 
   it('formate un montant à 0', () => {
-    expect(interpolate('{{prix.x}}', { 'prix.x': '0 Ar' })).toBe('0 Ar')
     const v = buildVars({ ...seed, prices: [{ key: 'x', label: 'x', amount: 0, unit: 'ar' }] })
     expect(norm(interpolate('{{prix.x}}', v))).toBe('0 Ar')
+  })
+})
+
+describe('jetons mal formés', () => {
+  const cases = [
+    ['majuscule', '{{Prix.reception_jour}}', 'Prix.reception_jour'],
+    ['tiret', '{{prix-reception}}', 'prix-reception'],
+    ['espace interne', '{{prix reception}}', 'prix reception'],
+    ['vide', '{{}}', ''],
+    ['espaces seuls', '{{ }}', ''],
+  ]
+
+  it.each(cases)('interpolate refuse : %s', (_label, text, name) => {
+    expect(() => interpolate(`a ${text} b`, vars)).toThrow(`Variable inconnue : {{${name}}}`)
+  })
+
+  it.each(cases)('unknownTokens signale : %s', (_label, text, name) => {
+    expect(unknownTokens(text, vars)).toEqual([name])
+  })
+
+  it('unknownTokens garde l’ordre et l’unicité, chaîne vide comprise', () => {
+    expect(unknownTokens('{{}} {{Tel}} {{ }} {{Tel}} {{tel}}', vars)).toEqual(['', 'Tel'])
+  })
+
+  it('laisse toujours intact un jeton non fermé', () => {
+    expect(interpolate('{{Prix', vars)).toBe('{{Prix')
+    expect(unknownTokens('{{Prix et {{tel', vars)).toEqual([])
   })
 })
 

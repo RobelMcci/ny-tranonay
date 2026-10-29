@@ -1,6 +1,7 @@
 import { formatAr } from './format.js'
 
-const TOKEN = /\{\{\s*([a-z0-9_.]+)\s*\}\}/g
+// Tout `{{...}}` fermé est un jeton ; un `{{` non fermé est laissé tel quel.
+const TOKEN = /\{\{([^{}]*)\}\}/g
 
 /**
  * Variables de texte disponibles pour un contenu :
@@ -36,7 +37,8 @@ const isKnown = (vars, name) => Object.hasOwn(vars, name) && vars[name] !== unde
  * @returns {string}
  */
 export function interpolate(text, vars) {
-  return text.replace(TOKEN, (_match, name) => {
+  return text.replace(TOKEN, (_match, raw) => {
+    const name = raw.trim()
     if (!isKnown(vars, name)) throw new Error(`Variable inconnue : {{${name}}}`)
     return vars[name]
   })
@@ -50,7 +52,8 @@ export function interpolate(text, vars) {
  */
 export function unknownTokens(text, vars) {
   const unknown = []
-  for (const [, name] of text.matchAll(TOKEN)) {
+  for (const [, raw] of text.matchAll(TOKEN)) {
+    const name = raw.trim()
     if (!isKnown(vars, name) && !unknown.includes(name)) unknown.push(name)
   }
   return unknown
