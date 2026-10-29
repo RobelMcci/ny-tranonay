@@ -1,4 +1,5 @@
-import { photo as resolvePhoto } from '../lib/images.js'
+import { photos, photo as resolvePhoto } from '../lib/images.js'
+import { roomCardPhoto } from '../lib/photo-registry.js'
 
 /** Image responsive WebP avec dimensions réservées (pas de décalage de mise en page).
  *  `name` : emplacement (`hero.1`) ou clé de photo. Rien n'est rendu si aucune photo n'existe. */
@@ -19,4 +20,10 @@ export default function Photo({ name, sizes = '(min-width: 1024px) 33vw, 100vw',
       className={className}
     />
   )
+}
+
+/** Photo de la carte d'une chambre : première photo choisie dans le tableau de bord, sinon comportement historique. */
+export function RoomCardPhoto({ room, ...props }) {
+  const name = roomCardPhoto(room, photos)
+  return name ? <Photo name={name} {...props} /> : null
 }

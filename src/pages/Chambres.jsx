@@ -1,21 +1,23 @@
 import { Link } from 'react-router-dom'
-import { rooms, text } from '../data/site.js'
+import { rooms, security, text } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
-import { roomPriceRange } from '../lib/rooms.js'
+import { roomPriceRange, roomTypesLabel } from '../lib/rooms.js'
 import { serviceSchema } from '../lib/schema.js'
+import { securityPartner } from '../lib/security.js'
 import CtaBand from '../components/CtaBand.jsx'
 import { ShieldIcon } from '../components/Icons.jsx'
 import PackCouple from '../components/PackCouple.jsx'
 import PageHero from '../components/PageHero.jsx'
-import Photo from '../components/Photo.jsx'
+import Photo, { RoomCardPhoto } from '../components/Photo.jsx'
 import Reveal from '../components/Reveal.jsx'
 import RoomCarousel from '../components/RoomCarousel.jsx'
 import Seo from '../components/Seo.jsx'
 
 const roomRange = roomPriceRange(rooms)
 const roomsHeading = roomRange
-  ? `Quatre types de chambre, de ${roomRange.min.toLocaleString('fr-FR').replace(/\s/g, ' ')} à ${formatAr(roomRange.max)} la nuit`
+  ? `${roomTypesLabel(rooms.length)}, de ${roomRange.min.toLocaleString('fr-FR').replace(/\s/g, ' ')} à ${formatAr(roomRange.max)} la nuit`
   : 'Nos chambres'
+const partner = securityPartner(security)
 
 export function Component() {
   return (
@@ -59,7 +61,7 @@ export function Component() {
         <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {rooms.map((room, i) => (
             <Reveal as="li" key={room.id} delay={i * 0.06} className="card-surface flex flex-col">
-              {room.id === 'twin' && <Photo name="chambres.1" sizes="(min-width: 1024px) 25vw, 50vw" className="-mx-6 -mt-6 mb-4 aspect-[4/3] w-[calc(100%+3rem)] max-w-none rounded-t-3xl object-cover" />}
+              <RoomCardPhoto room={room} sizes="(min-width: 1024px) 25vw, 50vw" className="-mx-6 -mt-6 mb-4 aspect-[4/3] w-[calc(100%+3rem)] max-w-none rounded-t-3xl object-cover" />
               <h3>{room.name}</h3>
               <p className="mt-3">
                 <span className="font-display text-3xl font-semibold text-[#C2410C]">{formatAr(room.price)}</span>
@@ -87,7 +89,9 @@ export function Component() {
             <p className="section-lead flex gap-3">
               <ShieldIcon className="mt-1 shrink-0 text-[#047857]" width={24} height={24} />
               <span>
-                Des gardiens employés par les propriétaires veillent sur le site, renforcés récemment par le groupe Dirickx Guard.
+                {partner
+                  ? `Des gardiens employés par les propriétaires veillent sur le site, renforcés récemment par le groupe ${partner.name}.`
+                  : 'Des gardiens employés par les propriétaires veillent sur le site.'}
               </span>
             </p>
             <p className="mt-5 text-slate-600">

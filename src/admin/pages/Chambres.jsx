@@ -31,6 +31,7 @@ function PhotoChoices({ entry, photos, disabled, onToggle, onRetry }) {
   return (
     <fieldset disabled={disabled} className="min-w-0">
       <legend className="field-label">Photos</legend>
+      <p className="mb-2 text-sm text-slate-700">La première photo cochée (et visible sur le site) illustre la carte de cette chambre sur la page Chambres.</p>
       {photos.status === 'loading' && <p className="text-sm text-slate-700">Chargement des photos…</p>}
       {photos.status === 'error' && (
         <div role="alert" className="text-sm text-red-900">

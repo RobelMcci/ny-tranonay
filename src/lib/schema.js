@@ -84,14 +84,18 @@ export const breadcrumbSchema = (path) => {
   }
 }
 
-export const faqSchema = () => ({
-  '@type': 'FAQPage',
-  mainEntity: faqs.map(({ q, a }) => ({
-    '@type': 'Question',
-    name: q,
-    acceptedAnswer: { '@type': 'Answer', text: a },
-  })),
-})
+// Sans question visible : `null` (pas de FAQPage vide), omis par `graph`.
+export const faqSchema = (list = faqs) =>
+  list.length === 0
+    ? null
+    : {
+        '@type': 'FAQPage',
+        mainEntity: list.map(({ q, a }) => ({
+          '@type': 'Question',
+          name: q,
+          acceptedAnswer: { '@type': 'Answer', text: a },
+        })),
+      }
 
 const offer = (name, description, price) => ({
   '@type': 'Offer',
@@ -122,4 +126,4 @@ export const serviceSchema = (name, description, price) => ({
   offers: { '@type': 'Offer', priceCurrency: 'MGA', price: String(price) },
 })
 
-export const graph =(...nodes) => ({ '@context': 'https://schema.org', '@graph': nodes })
+export const graph = (...nodes) => ({ '@context': 'https://schema.org', '@graph': nodes.filter(Boolean) })

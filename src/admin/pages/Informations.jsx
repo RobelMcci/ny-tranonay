@@ -7,7 +7,11 @@ import { useUnsavedWarning } from '../useUnsavedWarning.js'
 
 const focusRing = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C2410C]'
 
-/** Groupes de champs, dans l'ordre d'affichage (et de focus en cas d'erreur). */
+/**
+ * Groupes de champs, dans l'ordre d'affichage (et de focus en cas d'erreur).
+ * `securitySummary` n'y figure pas : il n'est affiché nulle part sur le site ; sa valeur stockée est recopiée telle quelle
+ * à l'enregistrement (voir `PRESERVED_KEYS` dans settings-map.js).
+ */
 const GROUPS = [
   {
     title: 'Contact',
@@ -45,8 +49,7 @@ const GROUPS = [
   {
     title: 'Sécurité',
     fields: [
-      { key: 'securitySummary', label: 'Texte sur la sécurité', multiline: true },
-      { key: 'securityPartnerName', label: 'Nom du partenaire de sécurité', hint: 'Facultatif, à remplir avec l’adresse ci-dessous.' },
+      { key: 'securityPartnerName', label: 'Nom du partenaire de sécurité', hint: 'Facultatif, à remplir avec l’adresse ci-dessous. Laissez les deux champs vides pour ne citer aucun partenaire sur le site.' },
       { key: 'securityPartnerUrl', label: 'Site du partenaire de sécurité', hint: 'Facultatif, commençant par https://', type: 'url' },
     ],
   },

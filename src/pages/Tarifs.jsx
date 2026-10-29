@@ -1,4 +1,4 @@
-import { packCouple, prices, roomHours, rooms, text } from '../data/site.js'
+import { faqs, packCouple, prices, roomHours, rooms, text } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
 import { faqSchema, offersSchema } from '../lib/schema.js'
 import Faq from '../components/Faq.jsx'
@@ -102,10 +102,12 @@ export function Component() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:py-24" aria-labelledby="faq-titre">
-        <h2 id="faq-titre" className="section-title text-center">Questions fréquentes</h2>
-        <div className="mt-8"><Faq /></div>
-      </section>
+      {faqs.length > 0 && (
+        <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:py-24" aria-labelledby="faq-titre">
+          <h2 id="faq-titre" className="section-title text-center">Questions fréquentes</h2>
+          <div className="mt-8"><Faq /></div>
+        </section>
+      )}
     </>
   )
 }

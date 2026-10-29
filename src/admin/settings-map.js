@@ -35,6 +35,13 @@ export const SETTINGS_KEYS = Object.keys(COLUMNS)
 const NUMBER_KEYS = ['facebookFollowers', 'latitude', 'longitude', 'openHour', 'closeHour']
 
 /**
+ * Clés absentes du formulaire Informations, recopiées telles quelles (sans retouche) à l'enregistrement.
+ * `securitySummary` n'est affiché nulle part sur le site : la colonne et sa valeur sont conservées, mais elle ne se
+ * modifie plus depuis le tableau de bord.
+ */
+export const PRESERVED_KEYS = ['securitySummary']
+
+/**
  * @param {object | null | undefined} row Ligne de la table `settings`.
  * @returns {object | null} Réglages au format `Content.settings`, ou `null` sans ligne.
  */
@@ -58,7 +65,8 @@ export function settingsFromForm(form) {
   const settings = {}
   for (const key of SETTINGS_KEYS) {
     const text = String(form[key] ?? '').trim()
-    if (key === 'latitude' || key === 'longitude') settings[key] = toDecimal(text)
+    if (PRESERVED_KEYS.includes(key)) settings[key] = String(form[key] ?? '')
+    else if (key === 'latitude' || key === 'longitude') settings[key] = toDecimal(text)
     else if (NUMBER_KEYS.includes(key)) settings[key] = Number(text.replace(/[\s\u00A0\u202F]/g, ''))
     else settings[key] = text
   }
@@ -87,7 +95,6 @@ export function validateSettings(settings) {
     hoursLabel: 'Le texte des horaires est requis.',
     roomCheckIn: 'L’heure d’arrivée des chambres est requise.',
     roomCheckOut: 'L’heure de départ des chambres est requise.',
-    securitySummary: 'Le texte de sécurité est requis.',
   }
   for (const [key, message] of Object.entries(required)) {
     if (text(settings[key]) === '') errors[key] = message

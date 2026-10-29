@@ -1,6 +1,9 @@
 import { security } from '../data/site.js'
+import { securityPartner } from '../lib/security.js'
 import { ShieldIcon } from './Icons.jsx'
 import Reveal from './Reveal.jsx'
+
+const partner = securityPartner(security)
 
 export default function SecurityBand() {
   return (
@@ -13,11 +16,17 @@ export default function SecurityBand() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#34D399]">Sérénité</p>
           <h2 id="securite-titre" className="mt-2 text-white">Un lieu surveillé, pour profiter l’esprit tranquille</h2>
           <p className="mt-4 max-w-3xl text-base leading-relaxed text-white/80 sm:text-lg">
-            Des gardiens employés par les propriétaires veillent sur le site. Récemment, le groupe de sécurité{' '}
-            <a href={security.partnerUrl} target="_blank" rel="noreferrer" className="font-semibold text-white underline underline-offset-2">
-              {security.partnerName}
-            </a>{' '}
-            est venu renforcer ce dispositif : le site reste sous surveillance pendant votre événement.
+            {partner ? (
+              <>
+                Des gardiens employés par les propriétaires veillent sur le site. Récemment, le groupe de sécurité{' '}
+                <a href={partner.url} target="_blank" rel="noreferrer" className="font-semibold text-white underline underline-offset-2">
+                  {partner.name}
+                </a>{' '}
+                est venu renforcer ce dispositif : le site reste sous surveillance pendant votre événement.
+              </>
+            ) : (
+              'Des gardiens employés par les propriétaires veillent sur le site, qui reste sous surveillance pendant votre événement.'
+            )}
           </p>
         </Reveal>
       </div>

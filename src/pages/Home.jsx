@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
-import { activitiesList, business, prices, rooms, text, whatsappLink } from '../data/site.js'
+import { activitiesList, business, faqs, prices, rooms, text, whatsappLink } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
-import { roomPriceRange } from '../lib/rooms.js'
+import { roomPriceRange, roomTypesLabel } from '../lib/rooms.js'
 import { businessSchema, faqSchema, websiteSchema } from '../lib/schema.js'
 import Bento from '../components/Bento.jsx'
 import CinemaFeature from '../components/CinemaFeature.jsx'
@@ -141,7 +141,7 @@ export function Component() {
           <h2 id="chambres-titre" className="section-title max-w-3xl">Prolongez la fête, dormez sur place</h2>
           <p className="section-lead">
             {roomRange
-              ? <>Quatre types de chambres climatisées, de {formatAr(roomRange.min)} à {formatAr(roomRange.max)} la nuit.</>
+              ? <>{`${roomTypesLabel(rooms.length, { pluralNoun: true, adjective: 'climatisée' })}, de `}{formatAr(roomRange.min)} à {formatAr(roomRange.max)} la nuit.</>
               : 'Des chambres climatisées pour dormir sur place.'}
           </p>
         </Reveal>
@@ -182,13 +182,15 @@ export function Component() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:pb-24" aria-labelledby="faq-titre">
-        <Reveal className="text-center">
-          <p className="eyebrow">FAQ</p>
-          <h2 id="faq-titre" className="section-title">Questions fréquentes</h2>
-        </Reveal>
-        <div className="mt-8"><Faq /></div>
-      </section>
+      {faqs.length > 0 && (
+        <section className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:pb-24" aria-labelledby="faq-titre">
+          <Reveal className="text-center">
+            <p className="eyebrow">FAQ</p>
+            <h2 id="faq-titre" className="section-title">Questions fréquentes</h2>
+          </Reveal>
+          <div className="mt-8"><Faq /></div>
+        </section>
+      )}
 
       <CtaBand />
     </>

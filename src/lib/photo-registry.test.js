@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import seed from '../data/content.seed.json'
-import { buildRegistry, galleryKeysOf, resolvePhoto, roomPhotoKeysOf } from './photo-registry.js'
+import { buildRegistry, galleryKeysOf, resolvePhoto, roomCardPhoto, roomPhotoKeysOf } from './photo-registry.js'
 
 const rows = [
   { key: 'facadeJour', file: 'image36', storagePath: null, alt: 'Façade', category: 'Espace', width: 2048, height: 1536, galleryPosition: 0 },
@@ -124,5 +124,25 @@ describe('galleryKeysOf et roomPhotoKeysOf', () => {
     const registry = { a: {}, b: {}, c: {}, z: {}, x: {} }
     expect(roomPhotoKeysOf(rows, registry)).toEqual(['c', 'a', 'b', 'z'])
     expect(galleryKeysOf(rows, registry)).toEqual(['c', 'a', 'b', 'x'])
+  })
+})
+
+describe('roomCardPhoto', () => {
+  const registry = { chambreRose: {}, chambreTwin: {} }
+
+  it('première photo choisie pour la chambre, si elle est dans le registre', () => {
+    expect(roomCardPhoto({ id: 'double', photoKeys: ['chambreRose', 'chambreTwin'] }, registry)).toBe('chambreRose')
+  })
+
+  it('saute une photo choisie absente du registre (masquée, fichier manquant)', () => {
+    expect(roomCardPhoto({ id: 'double', photoKeys: ['masquee', 'chambreTwin'] }, registry)).toBe('chambreTwin')
+  })
+
+  it('sans photo choisie utilisable : comportement historique (twin → emplacement chambres.1, sinon rien)', () => {
+    expect(roomCardPhoto({ id: 'twin', photoKeys: [] }, registry)).toBe('chambres.1')
+    expect(roomCardPhoto({ id: 'twin', photoKeys: ['masquee'] }, registry)).toBe('chambres.1')
+    expect(roomCardPhoto({ id: 'twin' }, registry)).toBe('chambres.1')
+    expect(roomCardPhoto({ id: 'double', photoKeys: [] }, registry)).toBeNull()
+    expect(roomCardPhoto({ id: 'double', photoKeys: ['masquee'] }, {})).toBeNull()
   })
 })

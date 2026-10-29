@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { m, useMotionTemplate, useMotionValueEvent, useScroll, useTransform } from 'framer-motion'
-import { prices } from '../data/site.js'
+import { prices, roomHours } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
+import { roomHourShort } from '../lib/rooms.js'
 import Photo from './Photo.jsx'
 import { MoonIcon, SunIcon } from './Icons.jsx'
 
@@ -40,7 +41,7 @@ const stages = [
   {
     time: 'Au réveil',
     title: 'On dort sur place',
-    text: 'Chambres climatisées avec eau chaude, wifi et terrasse privée, sur un site surveillé. La nuitée de privatisation se termine à 9h, le check-out des chambres est à 10h.',
+    text: `Chambres climatisées avec eau chaude, wifi et terrasse privée, sur un site surveillé. La nuitée de privatisation se termine à 9h, le check-out des chambres est à ${roomHourShort(roomHours.checkOut)}.`,
     slot: 'journee.6',
   },
 ]

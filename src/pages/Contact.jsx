@@ -1,4 +1,5 @@
-import { business, hours, mapsDirectionsUrl, mapsEmbedUrl, text, whatsappLink } from '../data/site.js'
+import { business, hours, mapsDirectionsUrl, mapsEmbedUrl, roomHours, text, whatsappLink } from '../data/site.js'
+import { roomHourShort } from '../lib/rooms.js'
 import { businessSchema } from '../lib/schema.js'
 import ContactForm from '../components/ContactForm.jsx'
 import { FacebookIcon, MailIcon, MessengerIcon, PhoneIcon, PinIcon, WhatsappIcon } from '../components/Icons.jsx'
@@ -34,7 +35,8 @@ export function Component() {
 
           <h2 className="mt-10 text-2xl">Horaires</h2>
           <p className="mt-3 text-slate-700">
-            Ouvert {hours.label.toLowerCase()}. Les nuitées de privatisation (18h à 9h) et les chambres (check-in 10h, check-out 10h) suivent leurs propres horaires.
+            Ouvert {hours.label.toLowerCase()}
+            {`. Les nuitées de privatisation (18h à 9h) et les chambres (check-in ${roomHourShort(roomHours.checkIn)}, check-out ${roomHourShort(roomHours.checkOut)}) suivent leurs propres horaires.`}
           </p>
           <OpenStatus className="mt-4" />
 

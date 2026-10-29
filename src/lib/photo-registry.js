@@ -73,3 +73,17 @@ export function resolvePhoto(nameOrSlot, registry, overrides = {}, defaults = {}
   const first = Object.keys(registry ?? {})[0]
   return first === undefined ? undefined : registry[first]
 }
+
+/**
+ * Photo de la carte d'une chambre (page Chambres) : la première photo choisie pour elle dans le tableau de bord
+ * (`photoKeys`) qui existe dans le registre ; sinon le comportement historique (chambre `twin` → emplacement
+ * `chambres.1`, les autres sans photo).
+ * @param {{ id: string, photoKeys?: string[] }} room
+ * @param {Record<string, Photo>} registry
+ * @returns {string | null} clé de photo ou emplacement, `null` si la carte n'a pas de photo.
+ */
+export function roomCardPhoto(room, registry) {
+  const chosen = (room?.photoKeys ?? []).find((key) => typeof key === 'string' && has(registry, key))
+  if (chosen) return chosen
+  return room?.id === 'twin' ? 'chambres.1' : null
+}

@@ -42,6 +42,13 @@ describe('formFromSettings / settingsFromForm', () => {
     expect(form.latitude).toBe('')
   })
 
+  it('conserve tel quel le texte de sécurité stocké (non modifiable depuis le formulaire)', () => {
+    const stored = { ...seed.settings, securitySummary: '  Texte stocké, espaces compris.\n' }
+    const row = settingsToRow(settingsFromForm(formFromSettings(settingsFromRow(settingsToRow(stored)))))
+    expect(row.security_summary).toBe(stored.securitySummary)
+    expect(settingsFromForm(formFromSettings(seed.settings)).securitySummary).toBe(seed.settings.securitySummary)
+  })
+
   it('accepte une virgule décimale et retire les espaces autour', () => {
     const form = { ...formFromSettings(seed.settings), latitude: '-18,945199', name: '  Tranonay ' }
     expect(settingsFromForm(form)).toMatchObject({ latitude: -18.945199, name: 'Tranonay' })
@@ -55,10 +62,15 @@ describe('validateSettings', () => {
   })
 
   it('exige les champs obligatoires', () => {
-    for (const key of ['name', 'tagline', 'phone', 'email', 'street', 'city', 'postalCode', 'country', 'hoursLabel', 'roomCheckIn', 'roomCheckOut', 'securitySummary']) {
+    for (const key of ['name', 'tagline', 'phone', 'email', 'street', 'city', 'postalCode', 'country', 'hoursLabel', 'roomCheckIn', 'roomCheckOut']) {
       const errors = validateSettings({ ...clone(), [key]: '  ' })
       expect(errors[key], key).toBeTruthy()
     }
+  })
+
+  it('n’exige plus le texte de sécurité (non affiché sur le site, absent du formulaire)', () => {
+    expect(validateSettings({ ...clone(), securitySummary: '' })).toEqual({})
+    expect(validateSettings({ ...formFromSettings(seed.settings), securitySummary: '' })).toEqual({})
   })
 
   it('contrôle le numéro WhatsApp (chiffres seulement, 8 à 15)', () => {
