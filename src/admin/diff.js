@@ -3,6 +3,7 @@
 import { formatAr } from '../lib/format.js'
 import { photoSlots } from '../data/photo-slots.js'
 import { textSlots } from '../data/text-slots.js'
+import { LIST_LABELS } from './list-keys.js'
 
 /**
  * @typedef {object} Change
@@ -39,15 +40,6 @@ const SETTING_LABELS = {
   securitySummary: 'Sécurité — Description',
   securityPartnerName: 'Sécurité — Nom du partenaire',
   securityPartnerUrl: 'Sécurité — Lien du partenaire',
-}
-
-const LIST_LABELS = {
-  inclus_privatisation: 'Inclus dans la privatisation',
-  inclus_reception: 'Inclus dans la réception',
-  extras: 'Extras',
-  activites: 'Activités',
-  pack_couple: 'Pack couple',
-  types_evenement: 'Types d’événement',
 }
 
 const ROOM_FIELDS = [
