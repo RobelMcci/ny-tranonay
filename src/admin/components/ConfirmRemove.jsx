@@ -37,6 +37,15 @@ export default function ConfirmRemove({ label, from, confirming, busy = false, o
     else askButton.current?.focus()
   }, [confirming])
 
+  // Une suppression qui échoue réactive les boutons : le focus, perdu avec le bouton désactivé, revient sur « Annuler ».
+  // Si l'utilisateur a déjà placé le focus ailleurs, on n'y touche pas.
+  const wasBusy = useRef(false)
+  useEffect(() => {
+    const finished = wasBusy.current && !busy
+    wasBusy.current = busy
+    if (finished && confirming && (document.activeElement === document.body || document.activeElement === null)) cancelButton.current?.focus()
+  }, [busy, confirming])
+
   return (
     <>
       <span role="status" aria-live="polite" className="sr-only">

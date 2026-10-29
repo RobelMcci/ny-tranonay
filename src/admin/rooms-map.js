@@ -54,8 +54,9 @@ export function roomToRow(room) {
  * Ajoute `-2`, `-3`… si l'identifiant existe déjà.
  * @param {string} name
  * @param {string[]} existingIds
+ * @param {{ fallback?: string }} [options] identifiant de repli quand le nom ne donne aucun caractère utilisable
  */
-export function slugify(name, existingIds) {
+export function slugify(name, existingIds, { fallback = FALLBACK_SLUG } = {}) {
   const base =
     String(name ?? '')
       .toLowerCase()
@@ -64,7 +65,7 @@ export function slugify(name, existingIds) {
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '') || FALLBACK_SLUG
+      .replace(/^-+|-+$/g, '') || fallback
   const fit = (suffix) => base.slice(0, MAX_SLUG - suffix.length).replace(/-+$/, '') + suffix
   const taken = new Set(existingIds)
   if (!taken.has(fit(''))) return fit('')

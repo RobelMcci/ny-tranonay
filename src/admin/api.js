@@ -1,7 +1,9 @@
 // Accès aux données du tableau de bord (liste plate de petites fonctions asynchrones).
 // Ne doit être importé que depuis `src/admin/**`.
 import { faqFromRow } from './faqs-map.js'
+import { newPhotoKey } from './image.js'
 import { pageFromRow, pageToRow } from './pages-map.js'
+import { photoFromRow } from './photos-map.js'
 import { roomFromRow, roomToRow } from './rooms-map.js'
 import { settingsFromRow, settingsToRow } from './settings-map.js'
 import { getSupabase } from './supabase.js'
@@ -281,4 +283,136 @@ export async function savePageSeo(page) {
   if (error) throw failureFr(action, error)
   if (!data?.length) throw new Error(`${action} Page introuvable ou vous n’avez pas les droits nécessaires.`)
   return pageFromRow(data[0])
+}
+
+const PHOTO_BUCKET = 'photos'
+
+/**
+ * Adresse publique d'un objet du bucket `photos` (même forme que celle utilisée par le build).
+ * @param {string} storagePath
+ */
+export function photoPublicUrl(storagePath) {
+  return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/${PHOTO_BUCKET}/${encodeURI(storagePath)}`
+}
+
+/**
+ * Toutes les photos, visibles ou non, par catégorie puis par clé.
+ * @returns {Promise<import('./photos-map.js').Photo[]>}
+ */
+export async function loadPhotos() {
+  const { data, error } = await getSupabase().from('photos').select('*').order('category').order('key')
+  if (error) throw failureFr('Impossible de charger les photos.', error)
+  return (data ?? []).map(photoFromRow)
+}
+
+/**
+ * Surcharges d'emplacements du brouillon.
+ * @returns {Promise<Record<string, string>>} emplacement → clé de photo
+ */
+export async function loadPhotoSlots() {
+  const { data, error } = await getSupabase().from('photo_slots').select('slot_key, photo_key')
+  if (error) throw failureFr('Impossible de charger les emplacements.', error)
+  return Object.fromEntries((data ?? []).map((row) => [row.slot_key, row.photo_key]))
+}
+
+/**
+ * Choisit la photo d'un emplacement (crée ou remplace la surcharge).
+ * @param {string} slotKey
+ * @param {string} photoKey
+ */
+export async function setPhotoSlot(slotKey, photoKey) {
+  const action = 'Impossible de changer la photo de cet emplacement.'
+  const { error } = await getSupabase().from('photo_slots').upsert({ slot_key: slotKey, photo_key: photoKey }, { onConflict: 'slot_key' })
+  if (error?.code === '23503') throw new Error(`${action} Cette photo n’existe plus : rechargez la page.`)
+  if (error) throw failureFr(action, error)
+}
+
+/**
+ * Rétablit la photo par défaut d'un emplacement (supprime la surcharge ; rien à faire s'il n'y en a pas).
+ * @param {string} slotKey
+ */
+export async function clearPhotoSlot(slotKey) {
+  const { error } = await getSupabase().from('photo_slots').delete().eq('slot_key', slotKey)
+  if (error) throw failureFr('Impossible de rétablir la photo par défaut.', error)
+}
+
+/**
+ * Met à jour le texte alternatif, la catégorie, le rang de galerie et la visibilité d'une photo.
+ * @param {string} key
+ * @param {{ alt: string, category: string, galleryPosition: number | null, visible: boolean }} meta
+ * @returns {Promise<import('./photos-map.js').Photo>} La photo enregistrée.
+ */
+export async function savePhotoMeta(key, { alt, category, galleryPosition, visible }) {
+  const action = 'Impossible d’enregistrer la photo.'
+  const { data, error } = await getSupabase()
+    .from('photos')
+    .update({ alt, category, gallery_position: galleryPosition, visible })
+    .eq('key', key)
+    .select('*')
+  if (error) throw failureFr(action, error)
+  if (!data?.length) throw new Error(`${action} Photo introuvable ou vous n’avez pas les droits nécessaires.`)
+  return photoFromRow(data[0])
+}
+
+/**
+ * Envoie une photo déjà redimensionnée dans le bucket (`<uuid>.jpg`), puis crée sa ligne `photos`
+ * (`file` nul, hors galerie, visible). Si la ligne n'a pas pu être créée, l'objet envoyé est retiré (au mieux).
+ * @param {{ blob: Blob, width: number, height: number, alt: string, category: string, existingKeys: string[] }} input
+ * @returns {Promise<import('./photos-map.js').Photo>}
+ */
+export async function uploadPhoto({ blob, width, height, alt, category, existingKeys }) {
+  const supabase = getSupabase()
+  const action = 'Impossible d’envoyer la photo.'
+  const storagePath = `${crypto.randomUUID()}.jpg`
+  const { error: uploadError } = await supabase.storage.from(PHOTO_BUCKET).upload(storagePath, blob, { contentType: 'image/jpeg', upsert: false })
+  if (uploadError) {
+    if (String(uploadError.statusCode ?? uploadError.status) === '413') throw new Error(`${action} Le fichier dépasse 2 Mo.`)
+    throw failureFr(action, uploadError)
+  }
+  const row = {
+    key: newPhotoKey(alt, existingKeys),
+    file: null,
+    storage_path: storagePath,
+    alt,
+    category,
+    width,
+    height,
+    gallery_position: null,
+    visible: true,
+  }
+  const { data, error } = await supabase.from('photos').insert(row).select('*')
+  if (error || !data?.length) {
+    try {
+      await supabase.storage.from(PHOTO_BUCKET).remove([storagePath])
+    } catch {
+      // Nettoyage au mieux : l'erreur d'origine prime.
+    }
+    if (error?.code === '23505') throw new Error(`${action} Une photo porte déjà cet identifiant : modifiez légèrement le texte alternatif.`)
+    if (error) throw failureFr(action, error)
+    throw new Error(`${action} Vous n’avez pas les droits nécessaires.`)
+  }
+  return photoFromRow(data[0])
+}
+
+/**
+ * Supprime une photo : la ligne d'abord (refusée si un emplacement ou une chambre l'utilise), puis le fichier du bucket.
+ * Un fichier qui ne peut pas être retiré n'est pas une erreur : la photo est bien supprimée, un avertissement est renvoyé.
+ * @param {{ key: string, storagePath: string | null }} photo
+ * @returns {Promise<{ warning: string | null }>}
+ */
+export async function deletePhoto(photo) {
+  const supabase = getSupabase()
+  const action = 'Impossible de supprimer la photo.'
+  const { data, error } = await supabase.from('photos').delete().eq('key', photo.key).select('key')
+  if (error?.code === '23503') throw new Error('Cette photo est encore utilisée (emplacement ou chambre).')
+  if (error) throw failureFr(action, error)
+  if (!data?.length) throw new Error(`${action} Photo introuvable ou vous n’avez pas les droits nécessaires.`)
+  if (!photo.storagePath) return { warning: null }
+  try {
+    const { error: removeError } = await supabase.storage.from(PHOTO_BUCKET).remove([photo.storagePath])
+    if (removeError) throw removeError
+  } catch {
+    return { warning: 'La photo est supprimée, mais son fichier n’a pas pu être retiré du stockage. Il n’est plus visible nulle part.' }
+  }
+  return { warning: null }
 }

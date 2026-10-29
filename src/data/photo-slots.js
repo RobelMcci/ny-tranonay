@@ -32,3 +32,21 @@ export const photoSlots = [
   { key: 'salle.1', label: 'Salle de réception, 1re photo de buffet', page: 'Salle de réception', default: 'buffetCitron' },
   { key: 'salle.2', label: 'Salle de réception, 2e photo de buffet', page: 'Salle de réception', default: 'buffetDesserts' },
 ]
+
+/**
+ * Photos codées en dur dans les pages (non modifiables par emplacement) : le tableau de bord refuse de les masquer
+ * ou de les supprimer. Garder cette liste alignée avec les props `photo=` de PageHero, la rangée de trois photos de
+ * `Salle.jsx` et `InvitationCard.jsx` (les photos de la galerie et des chambres se déduisent de leur catégorie).
+ * @type {Array<{ photoKey: string, where: string }>}
+ */
+export const fixedPhotoUsages = [
+  { photoKey: 'facadeJour', where: 'bandeau de la page Contact' },
+  { photoKey: 'facadeJour', where: 'bandeau de la page Privatisation' },
+  { photoKey: 'chambreTwin', where: 'bandeau de la page Chambres' },
+  { photoKey: 'salleLongue', where: 'bandeau de la page Salle de réception' },
+  { photoKey: 'tableDressee', where: 'bandeau de la page Tarifs' },
+  { photoKey: 'tableDressee', where: 'trois photos de la page Salle de réception' },
+  { photoKey: 'salle', where: 'trois photos de la page Salle de réception' },
+  { photoKey: 'tables', where: 'trois photos de la page Salle de réception' },
+  { photoKey: 'piscine', where: 'carte d’invitation à partager' },
+]
