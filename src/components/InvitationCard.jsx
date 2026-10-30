@@ -11,8 +11,10 @@ export default function InvitationCard({ eventType, date, defaultHost }) {
   const [notice, setNotice] = useState('')
 
   useEffect(() => {
+    const srcSet = photos.piscine?.srcSet
+    if (!srcSet) return undefined // photo « piscine » absente du registre : pas d'invitation illustrée
     let cancelled = false
-    const photoUrl = pickFromSrcSet(photos.piscine.srcSet, 1200)
+    const photoUrl = pickFromSrcSet(srcSet, 1200)
     const timer = setTimeout(() => {
       if (!cancelled && canvasRef.current) drawInvitation(canvasRef.current, { eventType, date, host, photoUrl })
     }, 150)

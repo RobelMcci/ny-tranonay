@@ -29,4 +29,9 @@ export default defineConfig([
       'react/jsx-uses-vars': 'error',
     },
   },
+  {
+    // Test de bout en bout (Playwright) : s'exécute sous Node.
+    files: ['e2e/**/*.js', 'playwright.config.js'],
+    languageOptions: { globals: globals.node },
+  },
 ])

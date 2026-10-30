@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { m, useMotionTemplate, useMotionValueEvent, useScroll, useTransform } from 'framer-motion'
-import { prices } from '../data/site.js'
+import { prices, roomHours } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
+import { roomHourShort } from '../lib/rooms.js'
 import Photo from './Photo.jsx'
 import { MoonIcon, SunIcon } from './Icons.jsx'
 
@@ -11,37 +12,37 @@ const stages = [
     time: '8h30',
     title: 'Le site est à vous',
     text: 'La journée de privatisation commence : piscine, baby-foot, jeux vidéo, simulateur de course, water gun et jeux de société, rien que pour votre groupe.',
-    photo: 'facadeJour',
+    slot: 'journee.1',
   },
   {
     time: 'Midi',
     title: 'Grillades et tables dressées',
     text: `Barbecue sur place, repas sur commande (plat du jour ${formatAr(prices.meals.platDuJour)}, plat complet ${formatAr(prices.meals.platComplet)}) ou nourriture apportée de l’extérieur : boissons sur place.`,
-    photo: 'brochettes',
+    slot: 'journee.2',
   },
   {
     time: '18h',
     title: 'Le soleil tombe, la fête change de rythme',
     text: 'La journée se termine à 18h et la nuitée commence. Les lumières s’allument autour de la piscine et du jardin.',
-    photo: 'piscinePont',
+    slot: 'journee.3',
   },
   {
     time: 'Soirée',
     title: 'Karaoké, dancing et jeux de lumière',
     text: 'La grande salle prend vie : sonorisation JBL, jeux de lumière, karaoké et dancing, baby-foot et jeux vidéo pour prolonger la soirée.',
-    photo: 'karaoke',
+    slot: 'journee.4',
   },
   {
     time: 'Nuit',
     title: 'Cinéma sous les étoiles',
     text: 'Un grand écran dans le jardin, face à la piscine éclairée : le film commence, allongé sur la pelouse.',
-    photo: 'cinemaPiscine',
+    slot: 'journee.5',
   },
   {
     time: 'Au réveil',
     title: 'On dort sur place',
-    text: 'Chambres climatisées avec eau chaude, wifi et terrasse privée, sur un site surveillé. La nuitée de privatisation se termine à 9h, le check-out des chambres est à 10h.',
-    photo: 'chambreTV',
+    text: `Chambres climatisées avec eau chaude, wifi et terrasse privée, sur un site surveillé. La nuitée de privatisation se termine à 9h, le check-out des chambres est à ${roomHourShort(roomHours.checkOut)}.`,
+    slot: 'journee.6',
   },
 ]
 
@@ -167,7 +168,7 @@ export default function DayNight() {
           <ol className="mt-10 grid gap-6 md:grid-cols-2">
             {stages.map((s) => (
               <li key={s.time} className="overflow-hidden rounded-3xl bg-black/25 backdrop-blur">
-                <Photo name={s.photo} sizes="(min-width: 768px) 50vw, 100vw" className="aspect-[16/10] w-full object-cover" />
+                <Photo name={s.slot} sizes="(min-width: 768px) 50vw, 100vw" className="aspect-[16/10] w-full object-cover" />
                 <div className="p-5">
                   <p className="text-sm font-semibold text-[#FDE68A]">{s.time}</p>
                   <h3 className="mt-1 text-white">{s.title}</h3>
@@ -213,8 +214,8 @@ export default function DayNight() {
           <div className="relative mx-auto aspect-[4/3] w-full max-w-md overflow-hidden rounded-3xl shadow-2xl ring-1 ring-white/20 lg:max-w-none" aria-hidden="true">
             {stages.map((s, i) => (
               <Photo
-                key={s.photo}
-                name={s.photo}
+                key={s.slot}
+                name={s.slot}
                 alt=""
                 sizes="(min-width: 1024px) 40vw, 90vw"
                 className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${i === active ? 'opacity-100' : 'opacity-0'}`}

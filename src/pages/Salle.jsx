@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { eventTypes, prices, receptionIncludes } from '../data/site.js'
+import { eventTypes, prices, receptionIncludes, text } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
 import { serviceSchema } from '../lib/schema.js'
 import CtaBand from '../components/CtaBand.jsx'
@@ -26,8 +26,8 @@ export function Component() {
       <PageHero
         photo="salleLongue"
         eyebrow="Salle & réceptions"
-        title="Location de salle de réception à Antananarivo"
-        lead={`Une grande salle lumineuse, déjà dressée : nappes, housses de chaise, décoration florale et sonorisation. Jusqu’à ${prices.reception.maxGuests} personnes, de 8h30 à 18h.`}
+        title={text('salle.hero.titre')}
+        lead={text('salle.hero.intro')}
       >
         <Link to="/tarifs-devis#simulateur" className="btn-primary">Obtenir un devis</Link>
       </PageHero>
@@ -80,8 +80,8 @@ export function Component() {
             La nourriture de l’extérieur est autorisée, les boissons sont servies sur place. Vous préférez ne pas vous en occuper ? Une restauration sur commande est possible : plat du jour à {formatAr(prices.meals.platDuJour)} ou plat complet (entrée, plat, dessert) à {formatAr(prices.meals.platComplet)}.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <Photo name="buffetCitron" sizes="(min-width: 1024px) 20vw, 45vw" className="aspect-[3/4] w-full rounded-2xl object-cover" />
-            <Photo name="buffetDesserts" sizes="(min-width: 1024px) 20vw, 45vw" className="aspect-[3/4] w-full rounded-2xl object-cover" />
+            <Photo name="salle.1" sizes="(min-width: 1024px) 20vw, 45vw" className="aspect-[3/4] w-full rounded-2xl object-cover" />
+            <Photo name="salle.2" sizes="(min-width: 1024px) 20vw, 45vw" className="aspect-[3/4] w-full rounded-2xl object-cover" />
           </div>
         </Reveal>
       </section>

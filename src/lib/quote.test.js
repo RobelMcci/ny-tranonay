@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildQuote, quoteToMessage, formatAr, emptyQuoteInput } from './quote.js'
+import { prices, rooms } from '../data/site.js'
 
 const base = emptyQuoteInput()
 
@@ -71,6 +72,32 @@ describe('buildQuote', () => {
   it('ignore les quantités négatives ou invalides', () => {
     const q = buildQuote({ ...base, formula: 'sejour', nights: 1, rooms: { double: -3, twin: Number.NaN } })
     expect(q.total).toBe(0)
+  })
+})
+
+describe('buildQuote avec un contenu injecté', () => {
+  it('utilise les prix du contenu fourni (privatisation journée = 250 000 Ar)', () => {
+    const content = { prices: { ...prices, privatisation: { jour: 250000, nuit: 250000 } }, rooms }
+    const q = buildQuote({ ...base, formula: 'privatisation', slots: { jour: true, nuit: false } }, content)
+    expect(q.total).toBe(250000)
+  })
+
+  it('utilise les chambres du contenu fourni (1 chambre à 70 000 Ar × 2 × 3 nuits = 420 000 Ar)', () => {
+    const content = { prices, rooms: [{ id: 'suite', name: 'Suite', price: 70000 }] }
+    const q = buildQuote({ ...base, formula: 'sejour', nights: 3, rooms: { suite: 2 } }, content)
+    expect(q.total).toBe(420000)
+  })
+
+  it('ignore sans erreur une chambre demandée quand le contenu n’a aucune chambre', () => {
+    const content = { prices, rooms: [] }
+    const q = buildQuote(
+      { ...base, formula: 'privatisation', slots: { jour: true, nuit: false }, rooms: { double: 2 } },
+      content,
+    )
+    expect(q.total).toBe(200000)
+    expect(q.lines).toHaveLength(1)
+    expect(() => buildQuote({ ...base, formula: 'sejour', rooms: { double: 2 } }, content)).not.toThrow()
+    expect(buildQuote({ ...base, formula: 'sejour', rooms: { double: 2 } }, content).total).toBe(0)
   })
 })
 

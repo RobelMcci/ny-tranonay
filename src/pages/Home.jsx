@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import { activitiesList, business, prices, rooms, whatsappLink } from '../data/site.js'
+import { activitiesList, business, faqs, prices, rooms, text, whatsappLink } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
+import { roomPriceRange, roomTypesLabel } from '../lib/rooms.js'
 import { businessSchema, faqSchema, websiteSchema } from '../lib/schema.js'
 import Bento from '../components/Bento.jsx'
 import CinemaFeature from '../components/CinemaFeature.jsx'
@@ -22,29 +23,31 @@ import Seo from '../components/Seo.jsx'
 import StatsBand from '../components/StatsBand.jsx'
 import Tilt from '../components/Tilt.jsx'
 
-const headline = 'Salle de réception, piscine et chambres à Antananarivo'.split(' ')
+const headline = text('accueil.hero.titre').split(' ')
+
+const roomRange = roomPriceRange(rooms)
 
 const offers = [
   {
     to: '/salle-reception-evenements',
-    photo: 'salleLongue',
-    title: 'Salle de réception',
-    text: 'Salle dinatoire équipée, couverts, nappes, housses de chaise, décoration florale et sono : tout est prêt.',
+    slot: 'accueil.offre.salle',
+    title: text('accueil.offre.salle.titre'),
+    text: text('accueil.offre.salle.texte'),
     price: `${formatAr(prices.reception.perDay)} / jour`,
   },
   {
     to: '/privatisation-piscine',
-    photo: 'facadeJour',
-    title: 'Privatisation & piscine',
-    text: 'Piscine, cinéma en plein air, karaoké, baby-foot, jeux vidéo et simulateur de course rien que pour votre groupe.',
+    slot: 'accueil.offre.privatisation',
+    title: text('accueil.offre.privatisation.titre'),
+    text: text('accueil.offre.privatisation.texte'),
     price: `${formatAr(prices.privatisation.jour)} / journée ou nuitée`,
   },
   {
     to: '/chambres',
-    photo: 'chambreTwin',
-    title: 'Chambres sur place',
-    text: 'Chambres climatisées avec eau chaude, wifi et terrasse privée pour prolonger la fête.',
-    price: `dès ${formatAr(Math.min(...rooms.map((r) => r.price)))} / nuit`,
+    slot: 'accueil.offre.chambres',
+    title: text('accueil.offre.chambres.titre'),
+    text: text('accueil.offre.chambres.texte'),
+    price: roomRange ? `dès ${formatAr(roomRange.min)} / nuit` : null,
   },
 ]
 
@@ -56,7 +59,7 @@ export function Component() {
       <HeroSlider>
         <OpenStatus tone="light" className="anim-rise" />
         <p className="anim-rise mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-[#FDBA74]" style={{ animationDelay: '0.04s' }}>
-          Ambohimasina · route du CUR Vontovorona · Antananarivo
+          {text('accueil.hero.eyebrow')}
         </p>
         <h1 className="mt-4 max-w-4xl text-white">
           {headline.map((word, i) => (
@@ -66,7 +69,7 @@ export function Component() {
           ))}
         </h1>
         <p className="anim-rise mt-6 max-w-2xl text-base leading-relaxed text-white/90 sm:text-xl" style={{ animationDelay: '0.35s' }}>
-          Anniversaires, réceptions et soirées : une grande salle dressée, une piscine privatisable, un cinéma en plein air et des chambres climatisées, sur un site surveillé.
+          {text('accueil.hero.sous-titre')}
         </p>
         <div className="anim-rise mt-8 flex flex-wrap gap-3" style={{ animationDelay: '0.45s' }}>
           <Link to="/tarifs-devis#simulateur" className="btn-primary">Estimer mon événement</Link>
@@ -97,12 +100,12 @@ export function Component() {
               <Tilt className="h-full">
                 <Link to={o.to} className="group block h-full overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-black/5 transition-shadow hover:shadow-2xl">
                   <div className="aspect-[4/3] overflow-hidden">
-                    <Photo name={o.photo} sizes="(min-width: 768px) 33vw, 100vw" className="h-full w-full object-cover transition duration-700 group-hover:scale-110" />
+                    <Photo name={o.slot} sizes="(min-width: 768px) 33vw, 100vw" className="h-full w-full object-cover transition duration-700 group-hover:scale-110" />
                   </div>
                   <div className="p-6">
                     <h3>{o.title}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-slate-600">{o.text}</p>
-                    <p className="mt-4 flex items-center justify-between text-sm font-bold text-[#C2410C]">
+                    <p className={`mt-4 flex items-center ${o.price ? 'justify-between' : 'justify-end'} text-sm font-bold text-[#C2410C]`}>
                       {o.price}
                       <span className="inline-flex items-center gap-1 transition group-hover:translate-x-1">Découvrir <ArrowIcon width={16} height={16} /></span>
                     </p>
@@ -137,7 +140,9 @@ export function Component() {
           <p className="eyebrow">Chambres</p>
           <h2 id="chambres-titre" className="section-title max-w-3xl">Prolongez la fête, dormez sur place</h2>
           <p className="section-lead">
-            Quatre types de chambres climatisées, de {formatAr(Math.min(...rooms.map((r) => r.price)))} à {formatAr(Math.max(...rooms.map((r) => r.price)))} la nuit.
+            {roomRange
+              ? <>{`${roomTypesLabel(rooms.length, { pluralNoun: true, adjective: 'climatisée' })}, de `}{formatAr(roomRange.min)} à {formatAr(roomRange.max)} la nuit.</>
+              : 'Des chambres climatisées pour dormir sur place.'}
           </p>
         </Reveal>
         <div className="mx-auto mt-8 max-w-[90rem]"><RoomCarousel /></div>
@@ -177,13 +182,15 @@ export function Component() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:pb-24" aria-labelledby="faq-titre">
-        <Reveal className="text-center">
-          <p className="eyebrow">FAQ</p>
-          <h2 id="faq-titre" className="section-title">Questions fréquentes</h2>
-        </Reveal>
-        <div className="mt-8"><Faq /></div>
-      </section>
+      {faqs.length > 0 && (
+        <section className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:pb-24" aria-labelledby="faq-titre">
+          <Reveal className="text-center">
+            <p className="eyebrow">FAQ</p>
+            <h2 id="faq-titre" className="section-title">Questions fréquentes</h2>
+          </Reveal>
+          <div className="mt-8"><Faq /></div>
+        </section>
+      )}
 
       <CtaBand />
     </>

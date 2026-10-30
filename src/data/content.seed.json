@@ -1,0 +1,622 @@
+{
+  "version": null,
+  "settings": {
+    "name": "Tranonay",
+    "tagline": "Salle de réception, piscine privatisable et chambres à Antananarivo",
+    "phone": "+261 34 21 410 31",
+    "whatsappNumber": "261342141031",
+    "email": "tranonay4@gmail.com",
+    "facebookUrl": "https://www.facebook.com/profile.php?id=61588385663321",
+    "messengerUrl": "https://m.me/61588385663321",
+    "facebookFollowers": 4000,
+    "street": "Ambohimasina, route vers le CUR Vontovorona",
+    "city": "Antananarivo",
+    "postalCode": "101",
+    "country": "Madagascar",
+    "countryCode": "MG",
+    "latitude": -18.945199,
+    "longitude": 47.431368,
+    "openHour": 8,
+    "closeHour": 21,
+    "hoursLabel": "De 8h à 21h",
+    "roomCheckIn": "10h",
+    "roomCheckOut": "10h le lendemain",
+    "securitySummary": "Le site est gardé en permanence par les gardiens des propriétaires, et le groupe de sécurité Dirickx Guard a récemment rejoint le dispositif.",
+    "securityPartnerName": "Dirickx Guard",
+    "securityPartnerUrl": "https://dirickx.mg"
+  },
+  "prices": [
+    {
+      "key": "privatisation_jour",
+      "label": "Privatisation, journée (8h30-18h)",
+      "amount": 200000,
+      "unit": "ar"
+    },
+    {
+      "key": "privatisation_nuit",
+      "label": "Privatisation, nuitée (18h-9h)",
+      "amount": 200000,
+      "unit": "ar"
+    },
+    {
+      "key": "reception_jour",
+      "label": "Réception événementielle, par jour",
+      "amount": 150000,
+      "unit": "ar"
+    },
+    {
+      "key": "reception_max_invites",
+      "label": "Réception, nombre maximum de personnes",
+      "amount": 50,
+      "unit": "personnes"
+    },
+    {
+      "key": "plat_du_jour",
+      "label": "Plat du jour",
+      "amount": 10000,
+      "unit": "ar"
+    },
+    {
+      "key": "plat_complet",
+      "label": "Plat complet (entrée, plat, dessert)",
+      "amount": 20000,
+      "unit": "ar"
+    },
+    {
+      "key": "pack_couple",
+      "label": "Pack couple",
+      "amount": 100000,
+      "unit": "ar"
+    }
+  ],
+  "rooms": [
+    {
+      "id": "double",
+      "name": "Chambre double",
+      "price": 45000,
+      "features": [
+        "Lit 2 places",
+        "Toilette extérieure",
+        "Climatisation",
+        "Eau chaude",
+        "Wifi",
+        "Terrasse privée"
+      ],
+      "photoKeys": [],
+      "quantity": 1
+    },
+    {
+      "id": "double-tv",
+      "name": "Chambre double avec TV",
+      "price": 50000,
+      "features": [
+        "Lit 2 places",
+        "Toilette extérieure",
+        "Climatisation",
+        "Eau chaude",
+        "Wifi",
+        "Terrasse privée",
+        "TV"
+      ],
+      "photoKeys": [],
+      "quantity": 1
+    },
+    {
+      "id": "twin",
+      "name": "Chambre twin",
+      "price": 55000,
+      "features": [
+        "Lit 2 places + lit simple",
+        "Toilette extérieure",
+        "Climatisation",
+        "Eau chaude",
+        "Wifi",
+        "Terrasse privée",
+        "TV"
+      ],
+      "photoKeys": [],
+      "quantity": 1
+    },
+    {
+      "id": "double-privee",
+      "name": "Chambre double, toilette privée",
+      "price": 60000,
+      "features": [
+        "Lit 2 places",
+        "Toilette privée",
+        "Climatisation",
+        "Eau chaude",
+        "Wifi",
+        "Terrasse privée",
+        "TV"
+      ],
+      "photoKeys": [],
+      "quantity": 1
+    }
+  ],
+  "lists": {
+    "inclus_privatisation": [
+      "Piscine",
+      "Grande salle",
+      "Karaoké et dancing",
+      "Baby-foot",
+      "Jeux vidéo sur PC",
+      "Simulateur de course au volant",
+      "Water gun",
+      "Jeux de société"
+    ],
+    "inclus_reception": [
+      "Salle dinatoire",
+      "Cuisine équipée",
+      "Couvert complet",
+      "Nappes de table",
+      "Housses de chaise",
+      "Décoration florale",
+      "Sonorisation"
+    ],
+    "extras": [
+      "Cinéma en plein air au bord de la piscine",
+      "Écran TV 80 pouces en salle",
+      "Barbecue",
+      "Cuisine équipée avec réfrigérateur",
+      "Sonorisation JBL"
+    ],
+    "activites": [
+      "Piscine",
+      "Cinéma en plein air",
+      "Karaoké & dancing",
+      "Baby-foot",
+      "Simulateur de course",
+      "Trampoline & toboggan",
+      "Water gun",
+      "Barbecue",
+      "Jeux vidéo",
+      "Jeux de société",
+      "Chambres climatisées"
+    ],
+    "pack_couple": [
+      "Une chambre pour la nuitée",
+      "Soupe spéciale ou mine sao spéciale, au choix",
+      "Poulet frit ou poulet pané",
+      "Petit-déjeuner offert par Tranonay"
+    ],
+    "types_evenement": [
+      "Anniversaire",
+      "Mariage ou réception de famille",
+      "EVG / EVJF",
+      "Soirée entre amis",
+      "Événement d’entreprise",
+      "Autre"
+    ]
+  },
+  "faqs": [
+    {
+      "question": "Où se trouve Tranonay ?",
+      "answer": "À Ambohimasina, sur la route vers le CUR de Vontovorona, à Antananarivo (101). Le bouton « Itinéraire » de la page Contact ouvre Google Maps."
+    },
+    {
+      "question": "Quels sont les horaires d’ouverture ?",
+      "answer": "Tranonay est ouvert de 8h à 21h. Les nuitées de privatisation (18h à 9h) et les chambres (check-in 10h, check-out 10h) ont leurs propres horaires."
+    },
+    {
+      "question": "Qu’est-ce que le pack couple ?",
+      "answer": "Pour {{prix.pack_couple}} : une chambre pour la nuitée, une soupe spéciale ou une mine sao spéciale au choix, du poulet frit ou pané, et le petit-déjeuner offert par Tranonay."
+    },
+    {
+      "question": "Quelle est la différence entre la journée et la nuitée en privatisation ?",
+      "answer": "La journée de privatisation court de 8h30 à 18h et la nuitée de 18h à 9h. Chacune coûte {{prix.privatisation_jour}} et donne accès à la piscine, à la grande salle, au karaoké et dancing, au baby-foot, aux jeux vidéo, au simulateur de course, au water gun et aux jeux de société."
+    },
+    {
+      "question": "Que comprend la réception événementielle ?",
+      "answer": "Un pack à {{prix.reception_jour}} par jour (de 8h30 à 18h) pour 50 personnes maximum : salle dinatoire, cuisine équipée, couverts complets, nappes, housses de chaise, décoration florale et sonorisation."
+    },
+    {
+      "question": "Peut-on apporter sa propre nourriture ?",
+      "answer": "Oui, la nourriture de l’extérieur est autorisée. Les boissons sont servies sur place. Une restauration sur commande est aussi possible : plat du jour à {{prix.plat_du_jour}} ou plat complet (entrée, plat, dessert) à {{prix.plat_complet}}."
+    },
+    {
+      "question": "Quels sont les horaires des chambres ?",
+      "answer": "Le check-in se fait à partir de 10h et le check-out a lieu à 10h le lendemain. Les chambres sont climatisées, avec eau chaude, wifi et terrasse privée."
+    },
+    {
+      "question": "Le lieu est-il sécurisé ?",
+      "answer": "Oui. Des gardiens employés par les propriétaires surveillent le site, et le groupe de sécurité Dirickx Guard a été engagé récemment pour renforcer cette surveillance."
+    },
+    {
+      "question": "Comment réserver ?",
+      "answer": "Par WhatsApp, par téléphone, par Messenger ou avec le formulaire de la page Contact. Le simulateur de devis permet de préparer sa demande et de l’envoyer en un clic."
+    }
+  ],
+  "pages": [
+    {
+      "path": "/",
+      "title": "Tranonay | Salle de réception, piscine et chambres à Antananarivo",
+      "description": "Tranonay, à Ambohimasina près du CUR Vontovorona : salle de réception, privatisation avec piscine, karaoké et jeux, chambres climatisées. Lieu sécurisé, devis en ligne.",
+      "priority": 1,
+      "navLabel": null
+    },
+    {
+      "path": "/salle-reception-evenements",
+      "title": "Location de salle de réception à Antananarivo | Tranonay",
+      "description": "Louez la salle de réception de Tranonay à Ambohimasina : {{prix.reception_jour}} par jour pour 50 personnes, cuisine équipée, couverts, nappes, housses, décoration florale et sono incluses.",
+      "priority": 0.9,
+      "navLabel": "Salle & réceptions"
+    },
+    {
+      "path": "/privatisation-piscine",
+      "title": "Privatiser une piscine et un espace de loisirs à Antananarivo | Tranonay",
+      "description": "Privatisez Tranonay pour {{prix.privatisation_jour}} la journée (8h30-18h) ou la nuitée (18h-9h) : piscine, karaoké, baby-foot, jeux vidéo, simulateur de course, water gun, barbecue.",
+      "priority": 0.9,
+      "navLabel": "Privatisation & piscine"
+    },
+    {
+      "path": "/chambres",
+      "title": "Chambres climatisées à Ambohimasina, Vontovorona | Tranonay",
+      "description": "Chambres climatisées avec eau chaude, wifi et terrasse privée à Ambohimasina, route du CUR Vontovorona. De {{chambre_min}} à {{chambre_max}} la nuit, check-in 10h.",
+      "priority": 0.8,
+      "navLabel": "Chambres"
+    },
+    {
+      "path": "/tarifs-devis",
+      "title": "Tarifs et devis en ligne | Tranonay Antananarivo",
+      "description": "Tous les tarifs de Tranonay (privatisation, réception, chambres, restauration) et un simulateur de devis instantané à envoyer par WhatsApp ou Messenger.",
+      "priority": 0.9,
+      "navLabel": "Tarifs & devis"
+    },
+    {
+      "path": "/contact",
+      "title": "Contact et accès | Tranonay, Ambohimasina Antananarivo",
+      "description": "Contactez Tranonay par WhatsApp, téléphone, Messenger ou formulaire. Adresse : Ambohimasina, route vers le CUR Vontovorona, Antananarivo 101.",
+      "priority": 0.8,
+      "navLabel": "Contact"
+    },
+    {
+      "path": "/mentions-legales",
+      "title": "Mentions légales | Tranonay",
+      "description": "Mentions légales du site Tranonay.",
+      "priority": 0.1,
+      "navLabel": null
+    },
+    {
+      "path": "/confidentialite",
+      "title": "Politique de confidentialité | Tranonay",
+      "description": "Comment Tranonay traite les données envoyées via le formulaire de contact.",
+      "priority": 0.1,
+      "navLabel": null
+    }
+  ],
+  "photos": [
+    {
+      "key": "facadeJour",
+      "file": "image36",
+      "storagePath": null,
+      "alt": "Façade de Tranonay et sa piscine sous le soleil, avec la fresque de plage au bord du bassin",
+      "category": "Espace",
+      "width": 2048,
+      "height": 1536,
+      "galleryPosition": 0
+    },
+    {
+      "key": "facade",
+      "file": "image15",
+      "storagePath": null,
+      "alt": "Façade de Tranonay avec ses balcons éclairés et la piscine au crépuscule",
+      "category": "Espace",
+      "width": 1200,
+      "height": 1600,
+      "galleryPosition": 25
+    },
+    {
+      "key": "escalier",
+      "file": "image14",
+      "storagePath": null,
+      "alt": "Cage d’escalier avec suspensions lumineuses et rambarde en verre",
+      "category": "Espace",
+      "width": 1536,
+      "height": 2048,
+      "galleryPosition": 21
+    },
+    {
+      "key": "piscine",
+      "file": "image10",
+      "storagePath": null,
+      "alt": "Piscine de Tranonay entourée de palmiers et d’un jardin, au crépuscule",
+      "category": "Piscine",
+      "width": 2048,
+      "height": 1536,
+      "galleryPosition": 4
+    },
+    {
+      "key": "piscinePont",
+      "file": "image11",
+      "storagePath": null,
+      "alt": "Bord de piscine avec marches d’accès, fresque murale en trompe-l’œil et pelouse",
+      "category": "Piscine",
+      "width": 2048,
+      "height": 1536,
+      "galleryPosition": 18
+    },
+    {
+      "key": "tentes",
+      "file": "image29",
+      "storagePath": null,
+      "alt": "Deux tentes de camping installées sur la pelouse au bord de la piscine",
+      "category": "Piscine",
+      "width": 2048,
+      "height": 1536,
+      "galleryPosition": 15
+    },
+    {
+      "key": "cinema",
+      "file": "image16",
+      "storagePath": null,
+      "alt": "Cinéma en plein air dans le jardin : écran de projection face à la piscine et à la façade éclairée, de nuit",
+      "category": "Cinéma",
+      "width": 2048,
+      "height": 1536,
+      "galleryPosition": 1
+    },
+    {
+      "key": "cinemaPiscine",
+      "file": "image25",
+      "storagePath": null,
+      "alt": "Grand écran de projection installé au bord de la piscine, la nuit",
+      "category": "Cinéma",
+      "width": 2048,
+      "height": 1536,
+      "galleryPosition": 10
+    },
+    {
+      "key": "salle",
+      "file": "image4",
+      "storagePath": null,
+      "alt": "Grande salle de réception aux tables dressées de nappes blanches, lustres et mur rouge",
+      "category": "Réception",
+      "width": 1542,
+      "height": 2047,
+      "galleryPosition": 19
+    },
+    {
+      "key": "salleLongue",
+      "file": "image23",
+      "storagePath": null,
+      "alt": "Salle de réception en longueur : longues tables dressées, chaises à housses blanches et lustres",
+      "category": "Réception",
+      "width": 1536,
+      "height": 2048,
+      "galleryPosition": 2
+    },
+    {
+      "key": "tableDressee",
+      "file": "image24",
+      "storagePath": null,
+      "alt": "Table dressée avec assiettes, verres colorés et bouquet, cuisine équipée en arrière-plan",
+      "category": "Réception",
+      "width": 1536,
+      "height": 2048,
+      "galleryPosition": 9
+    },
+    {
+      "key": "tables",
+      "file": "image3",
+      "storagePath": null,
+      "alt": "Tables de réception dressées : housses blanches, vases de fleurs, carafes de jus et couverts dorés",
+      "category": "Réception",
+      "width": 1542,
+      "height": 2047,
+      "galleryPosition": 23
+    },
+    {
+      "key": "brochettes",
+      "file": "image5",
+      "storagePath": null,
+      "alt": "Plateau de brochettes grillées",
+      "category": "Restauration",
+      "width": 1542,
+      "height": 2047,
+      "galleryPosition": 13
+    },
+    {
+      "key": "buffetCrevettes",
+      "file": "image6",
+      "storagePath": null,
+      "alt": "Buffet de réception avec présentoirs de crevettes et salades, devant la salle dressée",
+      "category": "Restauration",
+      "width": 2048,
+      "height": 1542,
+      "galleryPosition": 29
+    },
+    {
+      "key": "buffetDesserts",
+      "file": "image7",
+      "storagePath": null,
+      "alt": "Cuisine équipée avec bacs chauffants de plats et verrines de dessert à la fraise",
+      "category": "Restauration",
+      "width": 1542,
+      "height": 2047,
+      "galleryPosition": 28
+    },
+    {
+      "key": "buffetPlats",
+      "file": "image8",
+      "storagePath": null,
+      "alt": "Buffet froid : crevettes, salades composées, œufs mimosa et volaille panée",
+      "category": "Restauration",
+      "width": 1542,
+      "height": 2047,
+      "galleryPosition": 22
+    },
+    {
+      "key": "buffetSalle",
+      "file": "image9",
+      "storagePath": null,
+      "alt": "Buffet de réception avec plats variés et pile d’assiettes, tables dressées au fond",
+      "category": "Restauration",
+      "width": 1542,
+      "height": 2047,
+      "galleryPosition": 30
+    },
+    {
+      "key": "buffetCuisine",
+      "file": "image21",
+      "storagePath": null,
+      "alt": "Îlot de la cuisine équipée chargé d’un buffet de salades, charcuteries et fritures",
+      "category": "Restauration",
+      "width": 1542,
+      "height": 2047,
+      "galleryPosition": 16
+    },
+    {
+      "key": "buffetCitron",
+      "file": "image22",
+      "storagePath": null,
+      "alt": "Buffet froid avec présentoirs de crevettes, plat de citrons verts, salades composées et œufs mimosa",
+      "category": "Restauration",
+      "width": 1542,
+      "height": 2047,
+      "galleryPosition": 6
+    },
+    {
+      "key": "packRepas",
+      "file": "image33",
+      "storagePath": null,
+      "alt": "Soupe spéciale et mine sao spéciale servies sur un plateau, avec un plat de poulet et riz",
+      "category": "Restauration",
+      "width": 600,
+      "height": 430,
+      "galleryPosition": null
+    },
+    {
+      "key": "karaoke",
+      "file": "image13",
+      "storagePath": null,
+      "alt": "Salle karaoké et dancing éclairée de jeux de lumière violets, avec fresques sur le thème de la musique",
+      "category": "Soirée",
+      "width": 2048,
+      "height": 1536,
+      "galleryPosition": 7
+    },
+    {
+      "key": "simulateur",
+      "file": "image12",
+      "storagePath": null,
+      "alt": "Simulateur de course au volant avec siège, volant, écran et pédales devant une fresque de voiture",
+      "category": "Jeux",
+      "width": 1536,
+      "height": 2048,
+      "galleryPosition": 27
+    },
+    {
+      "key": "simulateurJeu",
+      "file": "image17",
+      "storagePath": null,
+      "alt": "Un joueur au volant du simulateur de course, devant la fresque « Racing Team »",
+      "category": "Jeux",
+      "width": 1536,
+      "height": 2048,
+      "galleryPosition": 8
+    },
+    {
+      "key": "babyfoot",
+      "file": "image2",
+      "storagePath": null,
+      "alt": "Baby-foot sur la terrasse du bâtiment",
+      "category": "Jeux",
+      "width": 1542,
+      "height": 2047,
+      "galleryPosition": 26
+    },
+    {
+      "key": "babyfootMur",
+      "file": "image18",
+      "storagePath": null,
+      "alt": "Baby-foot devant le mur peint « Tranonay » et ses feuilles de monstera, avec la piscine en arrière-plan",
+      "category": "Jeux",
+      "width": 2048,
+      "height": 1536,
+      "galleryPosition": 12
+    },
+    {
+      "key": "jeuxSociete",
+      "file": "image34",
+      "storagePath": null,
+      "alt": "Jeux de société posés au sol : Monopoly, échecs, roulette et jeux de cartes",
+      "category": "Jeux",
+      "width": 2048,
+      "height": 1536,
+      "galleryPosition": 14
+    },
+    {
+      "key": "trampoline",
+      "file": "image30",
+      "storagePath": null,
+      "alt": "Trampoline et toboggan pour enfants sur la pelouse, avec la piscine et la façade au soleil",
+      "category": "Enfants",
+      "width": 1536,
+      "height": 2048,
+      "galleryPosition": 5
+    },
+    {
+      "key": "chambreTwin",
+      "file": "image27",
+      "storagePath": null,
+      "alt": "Chambre twin : un lit double et un lit simple, TV murale, climatisation et porte-fenêtre sur la terrasse",
+      "category": "Chambres",
+      "width": 2048,
+      "height": 1536,
+      "galleryPosition": 3
+    },
+    {
+      "key": "chambreVerte",
+      "file": "image19",
+      "storagePath": null,
+      "alt": "Chambre au papier peint à feuilles vertes, lit double et terrasse avec vue",
+      "category": "Chambres",
+      "width": 1536,
+      "height": 2048,
+      "galleryPosition": 11
+    },
+    {
+      "key": "chambreViolette",
+      "file": "image20",
+      "storagePath": null,
+      "alt": "Chambre avec lit double à motif violet, TV murale et rideaux roses",
+      "category": "Chambres",
+      "width": 1536,
+      "height": 2048,
+      "galleryPosition": 20
+    },
+    {
+      "key": "chambreOrange",
+      "file": "image26",
+      "storagePath": null,
+      "alt": "Chambre aux murs orange, lit double à motif de fleurs et grandes fenêtres",
+      "category": "Chambres",
+      "width": 2048,
+      "height": 1536,
+      "galleryPosition": 24
+    },
+    {
+      "key": "chambreTV",
+      "file": "image28",
+      "storagePath": null,
+      "alt": "Chambre avec lit double, TV murale, bureau et grande porte-fenêtre",
+      "category": "Chambres",
+      "width": 2048,
+      "height": 1536,
+      "galleryPosition": 31
+    },
+    {
+      "key": "chambreRose",
+      "file": "image31",
+      "storagePath": null,
+      "alt": "Chambre spacieuse avec armoire rouge, lit à motif de fleurs roses et TV",
+      "category": "Chambres",
+      "width": 2048,
+      "height": 1152,
+      "galleryPosition": 17
+    }
+  ],
+  "photoSlots": {},
+  "texts": {}
+}

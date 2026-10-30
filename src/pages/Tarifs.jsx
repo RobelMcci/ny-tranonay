@@ -1,4 +1,4 @@
-import { packCouple, prices, roomHours, rooms } from '../data/site.js'
+import { faqs, packCouple, prices, roomHours, rooms, text } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
 import { faqSchema, offersSchema } from '../lib/schema.js'
 import Faq from '../components/Faq.jsx'
@@ -44,8 +44,8 @@ export function Component() {
       <PageHero
         photo="tableDressee"
         eyebrow="Tarifs & devis"
-        title="Tarifs de Tranonay et devis en ligne"
-        lead="Tous nos prix en toute transparence, et un simulateur pour estimer votre événement en deux minutes, puis nous l’envoyer sur WhatsApp."
+        title={text('tarifs.hero.titre')}
+        lead={text('tarifs.hero.intro')}
       />
 
       <section className="section">
@@ -102,10 +102,12 @@ export function Component() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:py-24" aria-labelledby="faq-titre">
-        <h2 id="faq-titre" className="section-title text-center">Questions fréquentes</h2>
-        <div className="mt-8"><Faq /></div>
-      </section>
+      {faqs.length > 0 && (
+        <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:py-24" aria-labelledby="faq-titre">
+          <h2 id="faq-titre" className="section-title text-center">Questions fréquentes</h2>
+          <div className="mt-8"><Faq /></div>
+        </section>
+      )}
     </>
   )
 }

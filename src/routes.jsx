@@ -19,4 +19,23 @@ export const routes = [
       { path: '*', lazy: () => import('./pages/NotFound.jsx') },
     ],
   },
+  // Administration : chargée à la demande, jamais liée aux pages publiques (le client Supabase reste dans ces chunks).
+  {
+    path: 'admin',
+    lazy: () => import('./admin/AdminLayout.jsx'),
+    entry: 'src/admin/AdminLayout.jsx',
+    children: [
+      { index: true, lazy: () => import('./admin/pages/Accueil.jsx'), entry: 'src/admin/pages/Accueil.jsx' },
+      { path: 'connexion', lazy: () => import('./admin/Login.jsx'), entry: 'src/admin/Login.jsx' },
+      { path: 'informations', lazy: () => import('./admin/pages/Informations.jsx'), entry: 'src/admin/pages/Informations.jsx' },
+      { path: 'tarifs', lazy: () => import('./admin/pages/Tarifs.jsx'), entry: 'src/admin/pages/Tarifs.jsx' },
+      { path: 'chambres', lazy: () => import('./admin/pages/Chambres.jsx'), entry: 'src/admin/pages/Chambres.jsx' },
+      { path: 'listes', lazy: () => import('./admin/pages/Listes.jsx'), entry: 'src/admin/pages/Listes.jsx' },
+      { path: 'faq', lazy: () => import('./admin/pages/Faq.jsx'), entry: 'src/admin/pages/Faq.jsx' },
+      { path: 'photos', lazy: () => import('./admin/pages/Photos.jsx'), entry: 'src/admin/pages/Photos.jsx' },
+      { path: 'textes', lazy: () => import('./admin/pages/Textes.jsx'), entry: 'src/admin/pages/Textes.jsx' },
+      { path: 'referencement', lazy: () => import('./admin/pages/Referencement.jsx'), entry: 'src/admin/pages/Referencement.jsx' },
+      { path: 'publier', lazy: () => import('./admin/pages/Publier.jsx'), entry: 'src/admin/pages/Publier.jsx' },
+    ],
+  },
 ]

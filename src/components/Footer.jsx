@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import { business, pages, security, whatsappLink } from '../data/site.js'
+import { securityPartner } from '../lib/security.js'
 import OpenStatus from './OpenStatus.jsx'
 import { FacebookIcon, MailIcon, MessengerIcon, PhoneIcon, PinIcon, ShieldIcon, WhatsappIcon } from './Icons.jsx'
 
 const navPages = pages.filter((p) => p.nav)
+const partner = securityPartner(security)
 const heading = 'mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/60'
 const link = 'inline-flex items-center gap-2 text-white/80 transition hover:text-white'
 
@@ -60,11 +62,17 @@ export default function Footer() {
             <p className="flex items-start gap-2 text-sm leading-relaxed text-white/80">
               <ShieldIcon className="mt-0.5 shrink-0 text-[#34D399]" />
               <span>
-                Gardiens des propriétaires sur place, avec le renfort de{' '}
-                <a href={security.partnerUrl} target="_blank" rel="noreferrer" className="font-semibold text-white underline underline-offset-2">
-                  {security.partnerName}
-                </a>
-                .
+                {partner ? (
+                  <>
+                    Gardiens des propriétaires sur place, avec le renfort de{' '}
+                    <a href={partner.url} target="_blank" rel="noreferrer" className="font-semibold text-white underline underline-offset-2">
+                      {partner.name}
+                    </a>
+                    .
+                  </>
+                ) : (
+                  'Gardiens des propriétaires sur place.'
+                )}
               </span>
             </p>
           </div>

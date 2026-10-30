@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { extras, prices, privatisationIncludes } from '../data/site.js'
+import { extras, prices, privatisationIncludes, text } from '../data/site.js'
 import { formatAr } from '../lib/quote.js'
 import { serviceSchema } from '../lib/schema.js'
 import CtaBand from '../components/CtaBand.jsx'
@@ -33,8 +33,8 @@ export function Component() {
       <PageHero
         photo="facadeJour"
         eyebrow="Privatisation & piscine"
-        title="Privatisez la piscine et l’espace de loisirs à Antananarivo"
-        lead="Le temps d’une journée ou d’une nuit, Tranonay est à vous : piscine, karaoké et dancing, baby-foot, jeux vidéo, simulateur de course, water gun et jeux de société."
+        title={text('privatisation.hero.titre')}
+        lead={text('privatisation.hero.intro')}
       >
         <Link to="/tarifs-devis#simulateur" className="btn-primary">Estimer ma privatisation</Link>
       </PageHero>
@@ -68,8 +68,8 @@ export function Component() {
       <section className="bg-[#FDF6EC]">
         <div className="section grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
           <Reveal className="grid grid-cols-2 gap-3">
-            <Photo name="piscine" sizes="(min-width: 1024px) 30vw, 50vw" className="aspect-[4/5] w-full rounded-3xl object-cover" />
-            <Photo name="tentes" sizes="(min-width: 1024px) 30vw, 50vw" className="aspect-[4/5] w-full rounded-3xl object-cover" />
+            <Photo name="privatisation.1" sizes="(min-width: 1024px) 30vw, 50vw" className="aspect-[4/5] w-full rounded-3xl object-cover" />
+            <Photo name="privatisation.2" sizes="(min-width: 1024px) 30vw, 50vw" className="aspect-[4/5] w-full rounded-3xl object-cover" />
           </Reveal>
           <Reveal delay={0.1}>
             <p className="eyebrow">Et aussi</p>
